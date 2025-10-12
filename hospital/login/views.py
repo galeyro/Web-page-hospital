@@ -18,3 +18,6 @@ def index(request):
 
 def login_view(request):
     return render(request, 'login.html')
+
+def create_user(request):
+    return render(request, 'create_user.html')

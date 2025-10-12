@@ -25,5 +25,6 @@ urlpatterns = [
     path('hola-mundo/', views.hola_mundo, name="hola_mundo"),
     path('inicio/', views.index, name="inicio"),
     path('', views.index, name="index"),
-    path('login/', views.login_view, name='login')
+    path('login/', views.login_view, name='login'),
+    path('create_user/', views.create_user, name='create_user')
 ]
