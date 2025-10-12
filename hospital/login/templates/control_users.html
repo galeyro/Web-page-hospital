@@ -35,7 +35,12 @@
                             <span>{{ usuario.email }}</span>
                             <br>
                             <button>Actualizar</button>
-                            <button>Eliminar</button>
+                            <form method="post" action="{% url 'delete_user' usuario.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('Seguro de eliminar a {{usuario.nombres}} {{usuario.apellidos}}?')">
+                                    Eliminar
+                                </button>
+                            </form>
                         </li>
                         {% empty %}
                         <li>No hay usuarios registrados</li>

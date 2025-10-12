@@ -100,3 +100,25 @@ def control_users(request):
         'usuarios': usuarios
     }
     return render(request, 'control_users.html', context)
+
+# Delete specific user from DB
+def delete_user(request, user_id):
+    if request.method == 'POST':
+        try:
+            # Buscar usuario por ID
+            usuario = Usuario.objects.get(id=user_id)
+
+            # Guardar el nombre para el mensaje
+            nombre_usuario = f"{usuario.nombres} {usuario.apellidos}"
+
+            # Eliminar usuario DB
+            usuario.delete()
+            messages.success(request, f"Usuario {nombre_usuario} eliminado exitosamente")
+        
+        except Usuario.DoesNotExist:
+            messages.error(request,"El usuario no existe")
+
+        except Exception as e:
+            messages.error(request, f"Error al eliminar usuario: {str(e)}")
+    
+    return redirect('control_users')

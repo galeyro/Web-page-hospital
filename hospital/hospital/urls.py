@@ -30,4 +30,5 @@ urlpatterns = [
     path('home/',views.home, name='home'),
     path('control_users/',views.control_users,name='control_users'),
     path('logout/', views.logout_view, name='logout'),
+    path('delete_user/<int:user_id>/',views.delete_user, name='delete_user'),
 ]
