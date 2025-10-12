@@ -33,14 +33,19 @@
                             <strong>{{ usuario.nombres }} {{ usuario.apellidos }}</strong>
                             <br>
                             <span>{{ usuario.email }}</span>
-                            <br>
-                            <a href="{% url 'update_user' usuario.id %}" class="btn btn-primary">✏️ Actualizar</a>
-                            <form method="post" action="{% url 'delete_user' usuario.id %}" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit" onclick="return confirm('Seguro de eliminar a {{usuario.nombres}} {{usuario.apellidos}}?')">
-                                    🗑️ Eliminar
-                                </button>
-                            </form>
+                            <span class="btn-yes-no">
+                                <form method="get" action="{% url 'update_user' usuario.id %}">
+                                    <button class="btn" type="submit">
+                                        Actualizar
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'delete_user' usuario.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn" type="submit" onclick="return confirm('Seguro de eliminar a {{usuario.nombres}} {{usuario.apellidos}}?')">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </span>
                         </li>
                         {% empty %}
                         <li>No hay usuarios registrados</li>
