@@ -25,6 +25,15 @@
 
         <main class="login-main">
             <section class="login-container">
+                {% if request.session.usuario_nombre %}
+                    <p>
+                        Bienvenido, {{request.session.usuario_nombre}}!
+                    </p>
+                    <a href="{% url 'logout' %}">Cerrar Sesión</a>
+                {% else %}
+                    <p>No has iniciado sesión</p>
+                    <a href="{% url 'login' %}">Iniciar Sesión</a>
+                {% endif %}
                 <section class="login-card">
                      <a href="{% url 'control_users' %}">Gestionar usuarios</a>
                 </section>
