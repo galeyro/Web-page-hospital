@@ -79,6 +79,12 @@ def login_view(request):
 
 # Logount
 def logout_view(request):
+    # Limpiar mensajes anteriores primero
+    storage = messages.get_messages(request)
+    for message in storage:
+        # Los mensajes se marcan como leídos
+        pass
+
     # Limpiar la sesion
     request.session.flush()
     messages.success(request, 'Has cerrado sesión correctamente')
