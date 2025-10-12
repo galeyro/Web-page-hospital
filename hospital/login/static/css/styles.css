@@ -14,24 +14,16 @@ body {
 /* Header Styles */
 .header {
     background: #ffffff;
-    padding: 0.3rem 2rem; /* ← AGREGA ESTA LÍNEA (era sin padding) */
 
-    position: fixed;
-    width: 100%;
-    top: 0;
-    z-index: 800;
 }
 
 .navbar {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 10px 0 10px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 60px;
-    padding: 0.5rem 1rem;
-    min-height: 60px;
-    box-sizing: border-box;
 }
 
 /* Forzar alineación vertical en todos los elementos */
@@ -56,7 +48,7 @@ body {
 }
 
 .logo-img {
-    height: 35px;
+    height: 60px;
     width: auto;
     object-fit: contain;
 }
@@ -111,32 +103,48 @@ body {
 }
 
 /* Main Content Styles */
-.main-content {
-    margin-top: 80px;
-    min-height: calc(100vh - 80px - 300px);
+.main-content{
+    background-image: url("../images/HOSPITAL.webp");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 600px;
+    
+    padding-top: 20px;
 }
 
 .hero {
     text-align: center;
-    padding: 4rem 2rem;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    
+    background-color: white;
+    border-radius: 30px;
+    max-width: 600px;
+    margin: 0 auto;
+    /*background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);*/
 }
 
 .hero h1 {
+    
+
+    border: wheat;
+    
     font-size: 2.5rem;
     color: #2c3e50;
-    margin-bottom: 1rem;
+
 }
 
 .hero p {
+ 
     font-size: 1.2rem;
     color: #34495e;
-    margin-bottom: 2rem;
+    margin-bottom: 20px;
+
 }
 
 .hero-image {
     max-width: 800px;
-    margin: 0 auto 2rem;
+    margin: 0 auto 0.1rem;
 }
 
 .hero-image img {
@@ -165,7 +173,7 @@ body {
 .footer {
     background: #2c3e50;
     color: white;
-    padding: 3rem 2rem 1rem;
+    padding: 0.5rem 5rem 0.5rem;
 }
 
 .footer-content {
@@ -177,19 +185,21 @@ body {
 }
 
 .footer-section h3 {
+    text-align: center;
     color: #3498db;
     margin-bottom: 1rem;
 }
 
 .footer-section p {
+    text-align: center;
     color: #ecf0f1;
-    margin-bottom: 0.5rem;
+   
 }
 
 .footer-bottom {
     text-align: center;
-    margin-top: 2rem;
-    padding-top: 2rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
     border-top: 1px solid #34495e;
 }
 
@@ -213,7 +223,7 @@ body {
 
 /* Contenedor principal del login */
 .login-main {
-    margin-top: 10px; /* Espacio para el header fijo */
+    margin-top: 10px; 
     min-height: calc(120vh - 80px);
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
