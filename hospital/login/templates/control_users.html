@@ -34,11 +34,11 @@
                             <br>
                             <span>{{ usuario.email }}</span>
                             <br>
-                            <button>Actualizar</button>
+                            <a href="{% url 'update_user' usuario.id %}" class="btn btn-primary">✏️ Actualizar</a>
                             <form method="post" action="{% url 'delete_user' usuario.id %}" style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" onclick="return confirm('Seguro de eliminar a {{usuario.nombres}} {{usuario.apellidos}}?')">
-                                    Eliminar
+                                    🗑️ Eliminar
                                 </button>
                             </form>
                         </li>

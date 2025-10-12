@@ -122,3 +122,68 @@ def delete_user(request, user_id):
             messages.error(request, f"Error al eliminar usuario: {str(e)}")
     
     return redirect('control_users')
+
+# Update user as part of CRUD
+def update_user(request, user_id):
+    try:
+        usuario = Usuario.objects.get(id=user_id)
+    except Usuario.DoesNotExist:
+        messages.error(request, 'El usuario no existe')
+        return redirect('control_users')
+    
+    if request.method == 'POST':
+        # Obtener datos con valores por defecto
+        nombres = request.POST.get('nombres', '').strip()
+        apellidos = request.POST.get('apellidos', '').strip()
+        cedula = request.POST.get('cedula', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        email = request.POST.get('email', '').strip()
+        fecha_nacimiento = request.POST.get('fecha_nacimiento', '')
+        genero = request.POST.get('genero', '')
+        password = request.POST.get('password', '').strip()
+
+        # Validaciones
+        errores = []
+        if not nombres:
+            errores.append('El campo nombres es requerido')
+        if not apellidos:
+            errores.append('El campo apellidos es requerido')
+        if not email:
+            errores.append('El campo email es requerido')
+        if not cedula:
+            errores.append('El campo cédula es requerido')
+        if not telefono:
+            errores.append('El campo teléfono es requerido')
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            context = {'usuario': usuario}
+            return render(request, 'update_user.html', context)
+
+        try:
+            # Actualizar solo los campos que tienen datos
+            usuario.nombres = nombres
+            usuario.apellidos = apellidos
+            usuario.cedula = cedula
+            usuario.telefono = telefono
+            usuario.email = email
+            
+            if fecha_nacimiento:
+                usuario.fecha_nacimiento = fecha_nacimiento
+            if genero:
+                usuario.genero = genero
+            if password:
+                usuario.password = password
+
+            usuario.save()
+
+            messages.success(request, f"Usuario {usuario.nombres} {usuario.apellidos} actualizado exitosamente")
+            return redirect('control_users')
+        
+        except Exception as e:
+            messages.error(request, f"Error al actualizar usuario: {str(e)}")
+    
+    # Si es GET, mostrar formulario con datos actuales
+    context = {'usuario': usuario}
+    return render(request, 'update_user.html', context)

@@ -361,3 +361,7 @@ body {
     text-decoration: underline;
 }
 
+.btn-yes-no{
+    display: flex;
+    gap: 10px;
+}
