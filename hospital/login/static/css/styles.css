@@ -203,29 +203,10 @@ body {
     border-top: 1px solid #34495e;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .nav-links {
-        display: none;
-    }
-    
-    .footer-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-    
-    .hero h1 {
-        font-size: 2rem;
-    }
-}
-
 /* ===== ESTILOS PARA LOGIN/REGISTRO ===== */
 
 /* Contenedor principal del login */
 .login-main {
-    margin-top: 10px; 
-    min-height: calc(120vh - 80px);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -350,26 +331,7 @@ body {
     text-decoration: underline;
 }
 
-/* Responsive para login */
-@media (max-width: 768px) {
-    .login-main {
-        padding: 1rem;
-        margin-top: 60px;
-    }
-    
-    .login-card {
-        padding: 1.5rem;
-    }
-    
-    .form-row {
-        flex-direction: column;
-        gap: 0;
-    }
-    
-    .login-header h1 {
-        font-size: 1.5rem;
-    }
-}
+
 
 /* ===== ESTILOS ADICIONALES PARA LOGIN ===== */
 
