@@ -14,7 +14,7 @@ def hola_mundo(request):
 
 # index
 def index(request):
-    return HttpResponse("""
-        <h1>Index</h1>
-        <p>Soy Galo</p>
-    """)
+    return render(request, 'index.html')
+
+def login_view(request):
+    return render(request, 'login.html')
