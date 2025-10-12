@@ -80,3 +80,10 @@ def login_view(request):
             messages.error(request, 'No existe un usuario con ese email')
                  
     return render(request, 'login.html')
+
+# Logount
+def logout_view(request):
+    # Limpiar la sesion
+    request.session.flush()
+    messages.success(request, 'Has cerrado sesión correctamente')
+    return redirect('index')
