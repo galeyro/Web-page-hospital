@@ -14,12 +14,8 @@ Aqui a la vista se le llama template y el controllador se llama View
 def index(request):
     return render(request, 'index.html')
 
-
 def home(request):
     return render(request, 'home.html')
-
-def control_users(request):
-    return render(request, 'control_users.html')
 
 # Create user ----------------------------------------------
 def create_user(request):
@@ -87,3 +83,14 @@ def logout_view(request):
     request.session.flush()
     messages.success(request, 'Has cerrado sesión correctamente')
     return redirect('index')
+
+# Ver usuarios de DB
+def control_users(request):
+    # Obtener TODOS los usuarios de la DB
+    usuarios = Usuario.objects.all()
+
+    # Enviar los usuarios al template
+    context = {
+        'usuarios': usuarios
+    }
+    return render(request, 'control_users.html', context)
