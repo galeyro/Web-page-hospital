@@ -14,8 +14,6 @@ Aqui a la vista se le llama template y el controllador se llama View
 def index(request):
     return render(request, 'index.html')
 
-def login_view(request):
-    return render(request, 'login.html')
 
 def home(request):
     return render(request, 'home.html')
@@ -56,3 +54,29 @@ def create_user(request):
             messages.error(request, f'Error al crear usuario: {str(e)}')
 
     return render(request, 'create_user.html')
+
+# Login con usuario y contraseña
+def login_view(request):
+    if request.method == 'POST':
+        # Obtener datos del forms
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        try:
+            # Buscar usuario en BD
+            usuario = Usuario.objects.get(email=email)
+
+            # Verificar contraseñá por ahora sin encriptar TODO: Encriptar
+            if usuario.password == password:
+                # Login exitoso -> crear sesion
+                request.session['usuario_id'] = usuario.id
+                request.session['usuario_nombre']=usuario.nombres
+                messages.success(request, f'Bienvenido {usuario.nombres}')
+                return redirect('home')
+            else:
+                messages.error(request, 'Contraseña incorrecta')
+
+        except Usuario.DoesNotExist:
+            messages.error(request, 'No existe un usuario con ese email')
+                 
+    return render(request, 'login.html')
