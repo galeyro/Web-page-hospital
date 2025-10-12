@@ -178,7 +178,7 @@ body {
 
 /* Contenedor principal del login */
 .login-main {
-    margin-top: 120px; /* Espacio para el header fijo */
+    margin-top: 70px; /* Espacio para el header fijo */
     min-height: calc(120vh - 80px);
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
@@ -323,4 +323,32 @@ body {
     .login-header h1 {
         font-size: 1.5rem;
     }
+}
+
+/* ===== ESTILOS ADICIONALES PARA LOGIN ===== */
+
+/* Alertas de error */
+.alert {
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-error {
+    background-color: #fee;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+}
+
+/* Link de contraseña olvidada */
+.forgot-link {
+    color: #7f8c8d !important;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.forgot-link:hover {
+    color: #34495e !important;
+    text-decoration: underline;
 }
