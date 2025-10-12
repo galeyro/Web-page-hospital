@@ -21,3 +21,9 @@ def login_view(request):
 
 def create_user(request):
     return render(request, 'create_user.html')
+
+def home(request):
+    return render(request, 'home.html')
+
+def control_users(request):
+    return render(request, 'control_users.html')

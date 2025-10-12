@@ -26,5 +26,7 @@ urlpatterns = [
     path('inicio/', views.index, name="inicio"),
     path('', views.index, name="index"),
     path('login/', views.login_view, name='login'),
-    path('create_user/', views.create_user, name='create_user')
+    path('create_user/', views.create_user, name='create_user'),
+    path('home/',views.home, name='home'),
+    path('control_users/',views.control_users,name='control_users')
 ]

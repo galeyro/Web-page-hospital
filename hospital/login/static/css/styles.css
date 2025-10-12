@@ -14,42 +14,66 @@ body {
 /* Header Styles */
 .header {
     background: #ffffff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    padding: 1rem 2rem;
+    padding: 0.3rem 2rem; /* ← AGREGA ESTA LÍNEA (era sin padding) */
+
     position: fixed;
     width: 100%;
     top: 0;
-    z-index: 1000;
+    z-index: 800;
 }
 
 .navbar {
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    height: 60px;
+    padding: 0.5rem 1rem;
+    min-height: 60px;
+    box-sizing: border-box;
+}
+
+/* Forzar alineación vertical en todos los elementos */
+.navbar .logo,
+.navbar .nav-links {
+    display: flex;
+    align-items: center;
+    height: 60px;
+}
+
+.navbar .nav-links a {
+    display: flex;
+    align-items: center;
+    height: 100%;
 }
 
 .logo {
     display: flex;
     align-items: center;
     gap: 1rem;
+    height: 60px;
 }
 
 .logo-img {
-    height: 40px;
+    height: 35px;
+    width: auto;
+    object-fit: contain;
 }
 
 .logo-text {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: #2c3e50;
+    line-height: 1;
+    margin: 0;
 }
 
 .nav-links {
     display: flex;
     gap: 2rem;
     align-items: center;
+    height: 60px;
 }
 
 .nav-links a {
@@ -57,6 +81,10 @@ body {
     color: #2c3e50;
     font-weight: 500;
     transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    padding: 0 0.5rem;
 }
 
 .nav-links a:hover {
@@ -66,9 +94,16 @@ body {
 .login-btn {
     background: #3498db;
     color: white !important;
-    padding: 0.5rem 1.5rem;
-    border-radius: 25px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
     transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 500;
+    height: 40px;
+    box-sizing: border-box;
 }
 
 .login-btn:hover {
@@ -178,7 +213,7 @@ body {
 
 /* Contenedor principal del login */
 .login-main {
-    margin-top: 70px; /* Espacio para el header fijo */
+    margin-top: 10px; /* Espacio para el header fijo */
     min-height: calc(120vh - 80px);
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
@@ -197,6 +232,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     padding: 2rem;
+    margin-top: 30px;
 }
 
 .login-header {
@@ -267,17 +303,17 @@ body {
 /* Botón de login */
 .login-btn {
     width: 100%;
-    padding: 1rem;
+    padding: 0.5rem;
     background: linear-gradient(135deg, #3498db, #2980b9);
     color: white;
     border: none;
     border-radius: 5px;
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 400;
     font-family: 'Poppins', sans-serif;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 1rem;
+
 }
 
 .login-btn:hover {
@@ -352,3 +388,4 @@ body {
     color: #34495e !important;
     text-decoration: underline;
 }
+

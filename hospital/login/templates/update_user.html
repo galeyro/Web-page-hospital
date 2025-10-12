@@ -1,0 +1,49 @@
+{% load static %}
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="description" content="AlfaHospital Form to update info of the user"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta name="author" content="AlfaHospital"/>
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+        <title>AlfaHospital - Inicio</title>
+    </head>
+    <body>
+        <!-- Header simple -->
+        <header class="header">
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="{% static 'images/LOGO-COLOR.svg' %}" alt="Alfa Hospital Logo" class="logo-img">
+                </div>
+                <div class="nav-links">
+                    <a href="{% url 'home' %}" class="login-btn">Volver</a>
+                </div>
+            </nav>
+        </header>
+
+        <main class="login-main">
+            <section class="login-container">
+                <section class="login-card">
+                    <h1>Lista de usuarios registrados</h1>
+                    <ul>
+                        <li>
+                            Usuario 1
+                            <button>Actualizar</button>
+                            <button>Eliminar</button>
+                        </li>
+                        <li>
+                            Usuario 2
+                            <button>Actualizar</button>
+                            <button>Eliminar</button>
+                        </li>
+                    </ul>
+                </section>
+            </section>
+          
+
+        </main>
+
+    </body>
+</html>
