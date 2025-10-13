@@ -11,7 +11,7 @@
 
 ## 📋 Descripción
 
-**Alfa Hospital** es un sistema web de gestión hospitalaria desarrollado con Django que permite administrar usuarios del hospital de manera segura y eficiente. El sistema incluye autenticación, autorización y operaciones CRUD completas para la gestión de personal médico y administrativo.
+**Alfa Hospital** es un sistema web de gestión hospitalaria desarrollado con Django que permite administrar usuarios del hospital con operaciones CRUD y protección de URLs.
 
 ### ✨ Características Principales
 
@@ -20,16 +20,15 @@
 - 🛡️ **URLs protegidas** con decoradores personalizados
 - 🎨 **Interfaz responsive** con HTML semántico
 - 🔒 **Protección CSRF** en todos los formularios
-- 📱 **Diseño mobile-first** con CSS moderno
 
 ## 🚀 Características Técnicas
 
 ### Funcionalidades Implementadas
 
 - ✅ **Registro de usuarios** con validación de datos
-- ✅ **Inicio de sesión** con verificación de credenciales
-- ✅ **Gestión de sesiones** con middleware personalizado
-- ✅ **Listar usuarios** con información detallada
+- ✅ **Inicio de sesión** 
+- ✅ **Gestión de sesiones** con middleware 
+- ✅ **Listar usuarios**
 - ✅ **Actualizar usuarios** con formularios pre-llenados
 - ✅ **Eliminar usuarios** con confirmación de seguridad
 - ✅ **Protección de rutas** mediante decoradores
@@ -52,18 +51,17 @@
 | **SQL Server** | 2019+   | Base de datos principal            |
 | **HTML5**      | -       | Estructura semántica               |
 | **CSS3**       | -       | Estilos y diseño responsive        |
-| **JavaScript** | ES6+    | Interactividad del frontend        |
+
 
 ## 📁 Estructura del Proyecto
 
 ```
 Web-page-hospital/
-├── hospital/                    # Proyecto Django principal
+├── hospital/                   # Proyecto Django principal
 │   ├── manage.py               # Comando de gestión Django
 │   ├── hospital/               # Configuración del proyecto
 │   │   ├── settings.py         # Configuraciones
-│   │   ├── urls.py            # URLs principales
-│   │   └── wsgi.py            # Configuración WSGI
+│   │   ├── urls.py             # URLs principales
 │   └── login/                  # Aplicación principal
 │       ├── models.py           # Modelos de datos
 │       ├── views.py            # Lógica de las vistas
@@ -125,7 +123,7 @@ CREATE DATABASE DJANGO_HOSPITAL;
 2. Crear usuario Django:
 
 ```sql
-CREATE LOGIN django WITH PASSWORD = 'SqlUser!2025';
+CREATE LOGIN django WITH PASSWORD = 'password';
 USE DJANGO_HOSPITAL;
 CREATE USER django FOR LOGIN django;
 ALTER ROLE db_owner ADD MEMBER django;
@@ -178,42 +176,6 @@ La aplicación estará disponible en: `http://127.0.0.1:8000/`
 - **Actualizar**: Modificar datos de usuarios existentes
 - **Eliminar**: Remover usuarios con confirmación
 
-## 🔧 Configuración Avanzada
-
-### Variables de Entorno
-
-Crea un archivo `.env` para configuraciones sensibles:
-
-```env
-SECRET_KEY=tu-clave-secreta-aqui
-DEBUG=False
-DATABASE_NAME=DJANGO_HOSPITAL
-DATABASE_USER=django
-DATABASE_PASSWORD=SqlUser!2025
-DATABASE_HOST=localhost
-DATABASE_PORT=1433
-```
-
-### Configuración de Producción
-
-Para despliegue en producción, modifica `settings.py`:
-
-```python
-DEBUG = False
-ALLOWED_HOSTS = ['tu-dominio.com']
-SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 31536000
-```
-
-## 🧪 Testing
-
-```bash
-# Ejecutar todas las pruebas
-python manage.py test
-
-# Ejecutar pruebas específicas
-python manage.py test login.tests
-```
 
 ## 📊 Modelo de Datos
 
@@ -232,75 +194,19 @@ class Usuario(models.Model):
     fecha_registro = DateTimeField(auto_now_add=True)
 ```
 
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -m 'Agregar nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
-
-## 📝 Roadmap
-
-### 🎯 Próximas Funcionalidades
-
-- [ ] Sistema de roles y permisos
-- [ ] Historial médico de pacientes
-- [ ] Agenda de citas médicas
-- [ ] Reportes y estadísticas
-- [ ] API REST para integración
-- [ ] Notificaciones en tiempo real
-- [ ] Sistema de backup automático
-
-### 🔧 Mejoras Técnicas
-
-- [ ] Implementar Django REST Framework
-- [ ] Agregar tests unitarios completos
-- [ ] Documentación con Sphinx
-- [ ] Integración continua con GitHub Actions
-- [ ] Containerización con Docker
-- [ ] Monitoreo con logging avanzado
-
 ## 📋 Changelog
 
 ### [1.0.0] - 2025-10-12
 
-#### Agregado
-
-- Sistema de autenticación completo
-- CRUD de usuarios funcional
-- Protección de URLs con decoradores
-- Interfaz responsive con HTML semántico
-- Validación de formularios
-- Protección CSRF
-- Gestión de sesiones
-
-#### Seguridad
-
-- Implementación de @login_required
-- Validación de datos en servidor
-- Prevención de ataques CSRF
-- Limpieza segura de sesiones
-
 ## 👥 Equipo de Desarrollo
 
-- **Galo Alejandro** - _Desarrollador Principal_ - [@galeyro](https://github.com/galeyro)
+- _Desarrollador Principal_ - [@galeyro](https://github.com/galeyro)
 
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
-## 📞 Soporte
-
-¿Tienes preguntas o problemas?
-
-- 📧 Email: soporte@alfahospital.com
-- 🐛 Issues: [GitHub Issues](https://github.com/galeyro/Web-page-hospital/issues)
-- 📖 Documentación: [Wiki del proyecto](https://github.com/galeyro/Web-page-hospital/wiki)
-
----
-
 <div align="center">
   <p>⭐ ¡Dale una estrella si te gusta el proyecto! ⭐</p>
-  <p>Desarrollado con ❤️ para la gestión hospitalaria moderna</p>
+  <p>Desarrollado con ❤️ </p>
 </div>
