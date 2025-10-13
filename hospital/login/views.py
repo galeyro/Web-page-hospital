@@ -10,14 +10,35 @@ from .models import Usuario
 Aqui a la vista se le llama template y el controllador se llama View
 '''
 
+# DECORADOR PARA PROTEGER VISTAS
+def login_required(view_func):
+    """
+    Decorador que verifica si el usuario está logueado.
+    Si no está logueado, redirige al login.
+    """
+    def wrapper(request, *args, **kwargs):
+        # Verificar si existe una sesión activa
+        if 'usuario_id' not in request.session:
+            messages.warning(request, 'Debes iniciar sesión para acceder a esta página')
+            return redirect('login')
+        
+        # Si está logueado, ejecutar la vista normalmente
+        return view_func(request, *args, **kwargs)
+    
+    # Mantener el nombre y documentación de la función original
+    wrapper.__name__ = view_func.__name__
+    wrapper.__doc__ = view_func.__doc__
+    return wrapper
+
 # Redirect functions for nav ----------------------------
 def index(request):
     return render(request, 'index.html')
 
+@login_required
 def home(request):
     return render(request, 'home.html')
 
-# Create user ----------------------------------------------
+# Create user -------------------------------------------
 def create_user(request):
     if request.method == 'POST':
         # Obtener datos del formulario
@@ -91,6 +112,7 @@ def logout_view(request):
     return redirect('index')
 
 # Ver usuarios de DB
+@login_required
 def control_users(request):
     # Obtener TODOS los usuarios de la DB
     usuarios = Usuario.objects.all()
@@ -102,6 +124,7 @@ def control_users(request):
     return render(request, 'control_users.html', context)
 
 # Delete specific user from DB
+@login_required
 def delete_user(request, user_id):
     if request.method == 'POST':
         try:
@@ -124,6 +147,7 @@ def delete_user(request, user_id):
     return redirect('control_users')
 
 # Update user as part of CRUD
+@login_required
 def update_user(request, user_id):
     try:
         usuario = Usuario.objects.get(id=user_id)
