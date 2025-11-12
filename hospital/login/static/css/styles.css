@@ -1,0 +1,384 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Header Styles */
+.header {
+    background: #ffffff;
+
+}
+
+.navbar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 0 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Forzar alineación vertical en todos los elementos */
+.navbar .logo,
+.navbar .nav-links {
+    display: flex;
+    align-items: center;
+    height: 60px;
+}
+
+.navbar .nav-links a {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 60px;
+}
+
+.logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+.logo-text {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1;
+    margin: 0;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    height: 60px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #2c3e50;
+    font-weight: 500;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    padding: 0 0.5rem;
+}
+
+.nav-links a:hover {
+    color: #3498db;
+}
+
+.login-btn {
+    background: #3498db;
+    color: white !important;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 500;
+    height: 40px;
+    box-sizing: border-box;
+}
+
+.login-btn:hover {
+    background: #2980b9;
+}
+
+/* Main Content Styles */
+.main-content{
+    background-image: url("../images/HOSPITAL.webp");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 600px;
+    
+    padding-top: 20px;
+}
+
+.hero {
+    text-align: center;
+    
+    background-color: white;
+    border-radius: 30px;
+    max-width: 600px;
+    margin: 0 auto;
+    /*background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);*/
+}
+
+.hero h1 {
+    
+
+    border: wheat;
+    
+    font-size: 2.5rem;
+    color: #2c3e50;
+
+}
+
+.hero p {
+ 
+    font-size: 1.2rem;
+    color: #34495e;
+    margin-bottom: 20px;
+
+}
+
+.hero-image {
+    max-width: 800px;
+    margin: 0 auto 0.1rem;
+}
+
+.hero-image img {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.cta-button {
+    display: inline-block;
+    background: #2ecc71;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.cta-button:hover {
+    background: #27ae60;
+    transform: translateY(-2px);
+}
+
+/* Footer Styles */
+.footer {
+    background: #2c3e50;
+    color: white;
+    padding: 0.5rem 5rem 0.5rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.footer-section h3 {
+    text-align: center;
+    color: #3498db;
+    margin-bottom: 1rem;
+}
+
+.footer-section p {
+    text-align: center;
+    color: #ecf0f1;
+   
+}
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #34495e;
+}
+
+/* ===== ESTILOS PARA LOGIN/REGISTRO ===== */
+
+/* Contenedor principal del login */
+.login-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 800px;
+}
+
+.login-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    padding: 2rem;
+    margin-top: 30px;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-header h1 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+}
+
+.login-header p {
+    color: #7f8c8d;
+    font-size: 1rem;
+}
+
+/* Formulario */
+.login-form {
+    width: 100%;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    flex: 1;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.form-group input:required:invalid {
+    border-color: #e74c3c; /* Rojo cuando está vacio/invalido */
+}
+
+.form-group input:required:valid {
+    border-color: #27ae60; /* Verde cuando es válido */
+}
+
+/* Botón de login */
+.login-btn {
+    width: 100%;
+    padding: 0.5rem;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 400;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+}
+
+.login-btn:hover {
+    background: linear-gradient(135deg, #2980b9, #1f6fa5);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+/* Footer del login */
+.login-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.login-footer a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
+
+
+/* ===== ESTILOS ADICIONALES PARA LOGIN ===== */
+
+/* Alertas de error */
+.alert {
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-error {
+    background-color: #fee;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+}
+
+/* Link de contraseña olvidada */
+.forgot-link {
+    color: #7f8c8d !important;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.forgot-link:hover {
+    color: #34495e !important;
+    text-decoration: underline;
+}
+
+.btn-yes-no{
+    display: flex;
+    gap: 10px;
+}
+
+.btn{
+    background: #3498db;
+    color: white !important;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 500;
+    height: 20px;
+    box-sizing: border-box;
+    width: 200px;
+    border-color: none;
+}

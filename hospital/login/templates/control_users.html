@@ -1,0 +1,61 @@
+{% load static %}
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="description" content="AlfaHospital page to control the users in the DB"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta name="author" content="AlfaHospital"/>
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+        <title>AlfaHospital - Inicio</title>
+    </head>
+    <body>
+        <!-- Header simple -->
+        <header class="header">
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="{% static 'images/LOGO-COLOR.svg' %}" alt="Alfa Hospital Logo" class="logo-img">
+                </div>
+                <div class="nav-links">
+                    <a href="{% url 'home' %}" class="login-btn">Volver</a>
+                </div>
+            </nav>
+        </header>
+
+        <main class="login-main">
+            <section class="login-container">
+                <section class="login-card">
+                    <h1>Lista de usuarios registrados</h1>
+                    <ul>
+                        {% for usuario in usuarios %}
+                        <li>
+                            <strong>{{ usuario.nombres }} {{ usuario.apellidos }}</strong>
+                            <br>
+                            <span>{{ usuario.email }}</span>
+                            <span class="btn-yes-no">
+                                <form method="get" action="{% url 'update_user' usuario.id %}">
+                                    <button class="btn" type="submit">
+                                        Actualizar
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'delete_user' usuario.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn" type="submit" onclick="return confirm('Seguro de eliminar a {{usuario.nombres}} {{usuario.apellidos}}?')">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </span>
+                        </li>
+                        {% empty %}
+                        <li>No hay usuarios registrados</li>
+                        {%  endfor %}
+                    </ul>
+                </section>
+            </section>
+          
+
+        </main>
+
+    </body>
+</html>
