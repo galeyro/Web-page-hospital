@@ -1,5 +1,5 @@
 """
-URL configuration for hospital project.
+URL configuration for alfahospital project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
@@ -15,21 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-
-# Impotar app con mis vistas
-from login import views
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
-    path('inicio/', views.index, name="inicio"),
-    path('', views.index, name="index"),
-    path('login/', views.login_view, name='login'),
-    path('create_user/', views.create_user, name='create_user'),
-    path('home/',views.home, name='home'),
-    path('control_users/',views.control_users,name='control_users'),
-    path('logout/', views.logout_view, name='logout'),
-    path('delete_user/<int:user_id>/',views.delete_user, name='delete_user'),
-    path('update_user/<int:user_id>', views.update_user, name='update_user'),
+    path('citas', include("citasmedicas.urls")),
+    path('login', include("login.urls")),
 ]
