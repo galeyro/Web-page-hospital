@@ -124,10 +124,8 @@ App que gestiona:
 # Clonar repositorio
 git clone https://github.com/galeyro/Web-page-hospital.git
 cd Web-page-hospital
-```
 
-```bash
-# Inicializar proyecto:
+# Ejecutar proyecto proyecto:
 # Crear entorno virtual
 python -m venv venv
 
@@ -142,3 +140,11 @@ python manage.py migrate
 
 # Ejecutar servidor
 python manage.py runserver
+
+# Crear la misma estructura de carpetas desde cero
+# Inicializa el proyecto en si
+django-admin startproject alfahospital .
+
+# Crear las aplicaciones
+python manage.py startapp login
+python manage.py citasmedicas
