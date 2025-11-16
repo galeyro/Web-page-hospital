@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from .models import Usuario
 
 # Create your views here.
@@ -63,9 +64,16 @@ def create_user(request):
                 genero=genero,
                 password=password  # TODO: Encriptar contraseña
             )
+            usuario.full_clean()  # Ejecuta las validaciones del modelo
             usuario.save()
             messages.success(request, 'Usuario creado exitosamente!')
             return redirect('login')
+        
+        except ValidationError as e:
+            # e.message_dict es un diccionario con los errores por campo
+            for campo, errores in e.message_dict.items():
+                for error in errores:
+                    messages.error(request, f'{campo}: {error}')
         
         except Exception as e:
             messages.error(request, f'Error al crear usuario: {str(e)}')
@@ -200,6 +208,7 @@ def update_user(request, user_id):
             if password:
                 usuario.password = password
 
+            usuario.full_clean()  # Ejecuta las validaciones del modelo
             usuario.save()
 
             messages.success(request, f"Usuario {usuario.nombres} {usuario.apellidos} actualizado exitosamente")
