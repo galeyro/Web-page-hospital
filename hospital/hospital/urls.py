@@ -34,4 +34,8 @@ urlpatterns = [
     path('change_rol/<int:user_id>/', views.change_rol, name='change_rol'),
     path('dashboard_medico/', views.dashboard_medico, name='dashboard_medico'),
     path('dashboard_usuario/', views.dashboard_usuario, name='dashboard_usuario'),
+    path('create_medico/', views.create_medico, name='create_medico'),
+    path('create_consultorio/', views.create_consultorio, name='create_consultorio'),
+    path('create_horario/', views.create_horario, name='create_horario'),
+    path('create_especialidad/', views.create_especialidad, name='create_especialidad'),
 ]

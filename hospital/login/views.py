@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password, check_password
 from .models import Usuario
+from citas.models import Medico, Cita, Especialidad, Consultorio, Horario
+from .forms import CreateMedicoForm, CreateConsultorioForm, CreateHorarioForm, CreateEspecialidadForm
 
 # Create your views here.
 '''
@@ -152,13 +154,59 @@ def logout_view(request):
 @rol_required('admin')
 def control_users(request):
     usuarios = Usuario.objects.all()
+    medicos = Medico.objects.select_related('usuario', 'especialidad', 'consultorio')
+    citas = Cita.objects.select_related('medico', 'paciente', 'especialidad')
+    
+    # Estadísticas de usuarios
+    total_usuarios = usuarios.count()
+    total_admins = usuarios.filter(rol='admin').count()
+    total_medicos_usuarios = usuarios.filter(rol='medico').count()
+    total_usuarios_normales = usuarios.filter(rol='usuario').count()
+    
+    # Estadísticas de médicos
+    total_medicos_internos = medicos.filter(tipo='interno').count()
+    total_medicos_externos = medicos.filter(tipo='externo').count()
+    total_medicos_activos = medicos.filter(activo=True).count()
+    
+    # Estadísticas de consultorios
+    total_consultorios_internos = Consultorio.objects.filter(tipo='interno').count()
+    total_consultorios_externos = Consultorio.objects.filter(tipo='externo').count()
+    
+    # Estadísticas de citas
+    total_citas = citas.count()
+    citas_agendadas = citas.filter(estado='agendada').count()
+    citas_completadas = citas.filter(estado='completada').count()
+    
+    # Especialidades
+    especialidades = Especialidad.objects.all().count()
     
     context = {
         'usuarios': usuarios,
-        'total_usuarios': usuarios.count(),
-        'total_admins': usuarios.filter(rol='admin').count(),
-        'total_medicos': usuarios.filter(rol='medico').count(),
-        'total_usuarios_normales': usuarios.filter(rol='usuario').count(),
+        'medicos': medicos,
+        'citas': citas,
+        
+        # Stats usuarios
+        'total_usuarios': total_usuarios,
+        'total_admins': total_admins,
+        'total_medicos_usuarios': total_medicos_usuarios,
+        'total_usuarios_normales': total_usuarios_normales,
+        
+        # Stats médicos
+        'total_medicos_internos': total_medicos_internos,
+        'total_medicos_externos': total_medicos_externos,
+        'total_medicos_activos': total_medicos_activos,
+        
+        # Stats consultorios
+        'total_consultorios_internos': total_consultorios_internos,
+        'total_consultorios_externos': total_consultorios_externos,
+        
+        # Stats citas
+        'total_citas': total_citas,
+        'citas_agendadas': citas_agendadas,
+        'citas_completadas': citas_completadas,
+        
+        # Stats especialidades
+        'total_especialidades': especialidades,
     }
     return render(request, 'control_users.html', context)
 
@@ -197,6 +245,133 @@ def dashboard_medico(request):
         'citas_historial': []  # Se llenará cuando tengamos el modelo de Citas
     }
     return render(request, 'dashboard_medico.html', context)
+
+# ===== CREAR MÉDICO =====
+@rol_required('admin')
+def create_medico(request):
+    """Crear un nuevo médico (usuario con rol médico)"""
+    if request.method == 'POST':
+        form = CreateMedicoForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                # Crear usuario
+                password_hash = make_password(form.cleaned_data['password'])
+                usuario = Usuario(
+                    nombres=form.cleaned_data['nombres'],
+                    apellidos=form.cleaned_data['apellidos'],
+                    cedula=form.cleaned_data['cedula'],
+                    telefono=form.cleaned_data['telefono'],
+                    email=form.cleaned_data['email'],
+                    fecha_nacimiento=form.cleaned_data['fecha_nacimiento'],
+                    genero=form.cleaned_data['genero'],
+                    password=password_hash,
+                    rol='medico'
+                )
+                usuario.full_clean()
+                usuario.save()
+                
+                # Crear médico asociado
+                medico = Medico(
+                    usuario=usuario,
+                    especialidad=form.cleaned_data['especialidad'],
+                    tipo=form.cleaned_data['tipo'],
+                    numero_licencia=form.cleaned_data.get('numero_licencia', ''),
+                    consultorio=form.cleaned_data.get('consultorio')
+                )
+                medico.full_clean()
+                medico.save()
+                
+                messages.success(request, f'Médico {usuario.nombres} {usuario.apellidos} creado exitosamente!')
+                # Mantener sesión del admin - redirigir a control_users sin cerrar sesión
+                return redirect('control_users')
+            
+            except ValidationError as e:
+                for campo, errores in e.message_dict.items():
+                    for error in errores:
+                        messages.error(request, f'{campo}: {error}')
+            except Exception as e:
+                messages.error(request, f'Error al crear médico: {str(e)}')
+    else:
+        form = CreateMedicoForm()
+    
+    context = {'form': form}
+    return render(request, 'create_medico.html', context)
+
+# ===== CREAR CONSULTORIO =====
+@rol_required('admin')
+def create_consultorio(request):
+    """Crear un nuevo consultorio"""
+    if request.method == 'POST':
+        form = CreateConsultorioForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                consultorio = form.save()
+                messages.success(request, f'Consultorio {consultorio.numero} creado exitosamente!')
+                return redirect('control_users')
+            
+            except ValidationError as e:
+                for campo, errores in e.message_dict.items():
+                    for error in errores:
+                        messages.error(request, f'{campo}: {error}')
+            except Exception as e:
+                messages.error(request, f'Error al crear consultorio: {str(e)}')
+    else:
+        form = CreateConsultorioForm()
+    
+    context = {'form': form}
+    return render(request, 'create_consultorio.html', context)
+
+# ===== CREAR HORARIO =====
+@rol_required('admin')
+def create_horario(request):
+    """Crear un nuevo horario para un médico"""
+    if request.method == 'POST':
+        form = CreateHorarioForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                horario = form.save()
+                messages.success(request, f'Horario creado exitosamente!')
+                return redirect('control_users')
+            
+            except ValidationError as e:
+                for campo, errores in e.message_dict.items():
+                    for error in errores:
+                        messages.error(request, f'{campo}: {error}')
+            except Exception as e:
+                messages.error(request, f'Error al crear horario: {str(e)}')
+    else:
+        form = CreateHorarioForm()
+    
+    context = {'form': form}
+    return render(request, 'create_horario.html', context)
+
+# ===== CREAR ESPECIALIDAD =====
+@rol_required('admin')
+def create_especialidad(request):
+    """Crear una nueva especialidad"""
+    if request.method == 'POST':
+        form = CreateEspecialidadForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                especialidad = form.save()
+                messages.success(request, f'Especialidad {especialidad.nombre} creada exitosamente!')
+                return redirect('control_users')
+            
+            except ValidationError as e:
+                for campo, errores in e.message_dict.items():
+                    for error in errores:
+                        messages.error(request, f'{campo}: {error}')
+            except Exception as e:
+                messages.error(request, f'Error al crear especialidad: {str(e)}')
+    else:
+        form = CreateEspecialidadForm()
+    
+    context = {'form': form}
+    return render(request, 'create_especialidad.html', context)
 
 # Delete specific user from DB
 @login_required
