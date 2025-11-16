@@ -50,7 +50,7 @@ def rol_required(rol_requerido):
             # Verificar si tiene el rol correcto
             if usuario.rol != rol_requerido:
                 messages.error(request, f'No tienes permisos. Se requiere rol: {rol_requerido}')
-                return redirect('home')
+                return redirect('index')
             
             return view_func(request, *args, **kwargs)
         
@@ -62,11 +62,6 @@ def rol_required(rol_requerido):
 # Redirect functions for nav ----------------------------
 def index(request):
     return render(request, 'index.html')
-
-@login_required
-def home(request):
-    return render(request, 'home.html')
-
 # Create user -------------------------------------------
 def create_user(request):
     if request.method == 'POST':
@@ -154,25 +149,54 @@ def logout_view(request):
     messages.success(request, 'Has cerrado sesión correctamente')
     return redirect('index')
 
-# Ver usuarios de DB
 @rol_required('admin')
 def control_users(request):
-    # Obtener TODOS los usuarios de la DB
     usuarios = Usuario.objects.all()
-
-    # Enviar los usuarios al template
+    
     context = {
-        'usuarios': usuarios
+        'usuarios': usuarios,
+        'total_usuarios': usuarios.count(),
+        'total_admins': usuarios.filter(rol='admin').count(),
+        'total_medicos': usuarios.filter(rol='medico').count(),
+        'total_usuarios_normales': usuarios.filter(rol='usuario').count(),
     }
     return render(request, 'control_users.html', context)
 
-@rol_required('medico')
-def dashboard_medico(request):
-    return render(request, 'dashboard_medico.html')
+@rol_required('admin')
+def change_rol(request, user_id):
+    if request.method == 'POST':
+        nuevo_rol = request.POST.get('nuevo_rol')
+        try:
+            usuario = Usuario.objects.get(id=user_id)
+            rol_anterior = usuario.rol
+            usuario.rol = nuevo_rol
+            usuario.save()
+            messages.success(request, f'Rol de {usuario.nombres} cambió de {rol_anterior} a {nuevo_rol}')
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Usuario no encontrado')
+    
+    return redirect('control_users')
 
+# Dashboard para usuarios normales
 @rol_required('usuario')
 def dashboard_usuario(request):
-    return render(request, 'dashboard_usuario.html')
+    # Aquí irán las citas del usuario desde el modelo que crearemos
+    # Por ahora pasamos una lista vacía TODO: corregir
+    context = {
+        'citas': []  # Se llenará cuando tengamos el modelo de Citas
+    }
+    return render(request, 'dashboard_usuario.html', context)
+
+
+# Dashboard para médicos
+@rol_required('medico')
+def dashboard_medico(request):
+    # Aquí irán las citas del médico TODO: relacionar con citas de usuarios
+    context = {
+        'citas_hoy': [],       # Se llenará cuando tengamos el modelo de Citas
+        'citas_historial': []  # Se llenará cuando tengamos el modelo de Citas
+    }
+    return render(request, 'dashboard_medico.html', context)
 
 # Delete specific user from DB
 @login_required

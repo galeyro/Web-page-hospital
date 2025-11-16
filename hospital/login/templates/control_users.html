@@ -1,61 +1,483 @@
 {% load static %}
 <!doctype html>
-<html lang="en-US">
+<html lang="es">
     <head>
         <meta charset="utf-8"/>
-        <meta name="description" content="AlfaHospital page to control the users in the DB"/>
+        <meta name="description" content="AlfaHospital - Gestión de Usuarios"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <meta name="author" content="AlfaHospital"/>
         <link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
-        <title>AlfaHospital - Inicio</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+        <title>AlfaHospital - Gestión de Usuarios</title>
+        <style>
+            .admin-header {
+                background: #f8f9fa;
+                padding: 1.5rem;
+                border-radius: 10px;
+                margin-bottom: 2rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .admin-header h1 {
+                margin: 0;
+                color: #2c3e50;
+                font-size: 1.8rem;
+            }
+
+            .btn-crear-usuario {
+                background: #2ecc71;
+                color: white;
+                padding: 0.75rem 1.5rem;
+                border-radius: 5px;
+                text-decoration: none;
+                font-weight: 600;
+                transition: all 0.3s;
+                display: inline-block;
+                border: none;
+                cursor: pointer;
+            }
+
+            .btn-crear-usuario:hover {
+                background: #27ae60;
+                transform: translateY(-2px);
+            }
+
+            .filtros-container {
+                background: #f8f9fa;
+                padding: 1rem;
+                border-radius: 10px;
+                margin-bottom: 1.5rem;
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            .filtro-grupo {
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+            }
+
+            .filtro-grupo label {
+                font-weight: 600;
+                color: #2c3e50;
+                font-size: 0.9rem;
+            }
+
+            .filtro-grupo select,
+            .filtro-grupo input {
+                padding: 0.5rem;
+                border: 2px solid #e0e0e0;
+                border-radius: 5px;
+                font-family: 'Poppins', sans-serif;
+            }
+
+            .btn-filtrar {
+                background: #3498db;
+                color: white;
+                padding: 0.5rem 1rem;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s;
+            }
+
+            .btn-filtrar:hover {
+                background: #2980b9;
+            }
+
+            .usuarios-tabla {
+                width: 100%;
+                border-collapse: collapse;
+                background: white;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+
+            .usuarios-tabla thead {
+                background: #34495e;
+                color: white;
+            }
+
+            .usuarios-tabla th {
+                padding: 1rem;
+                text-align: left;
+                font-weight: 600;
+                font-size: 0.95rem;
+            }
+
+            .usuarios-tabla tbody tr {
+                border-bottom: 1px solid #e0e0e0;
+                transition: background 0.2s;
+            }
+
+            .usuarios-tabla tbody tr:hover {
+                background: #f8f9fa;
+            }
+
+            .usuarios-tabla td {
+                padding: 1rem;
+                color: #34495e;
+            }
+
+            .rol-badge {
+                display: inline-block;
+                padding: 0.4rem 0.8rem;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                text-align: center;
+                min-width: 100px;
+            }
+
+            .rol-admin {
+                background: #e74c3c;
+                color: white;
+            }
+
+            .rol-medico {
+                background: #3498db;
+                color: white;
+            }
+
+            .rol-usuario {
+                background: #95a5a6;
+                color: white;
+            }
+
+            .acciones-btn {
+                display: flex;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+
+            .btn-tabla {
+                padding: 0.5rem 0.75rem;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.85rem;
+                transition: all 0.3s;
+                font-family: 'Poppins', sans-serif;
+            }
+
+            .btn-editar {
+                background: #3498db;
+                color: white;
+            }
+
+            .btn-editar:hover {
+                background: #2980b9;
+            }
+
+            .btn-eliminar {
+                background: #e74c3c;
+                color: white;
+            }
+
+            .btn-eliminar:hover {
+                background: #c0392b;
+            }
+
+            .btn-cambiar-rol {
+                background: #f39c12;
+                color: white;
+            }
+
+            .btn-cambiar-rol:hover {
+                background: #d68910;
+            }
+
+            .sin-usuarios {
+                text-align: center;
+                padding: 3rem;
+                color: #7f8c8d;
+                background: #f8f9fa;
+                border-radius: 10px;
+            }
+
+            .estadisticas {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                background: white;
+                padding: 1.5rem;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                text-align: center;
+            }
+
+            .stat-numero {
+                font-size: 2rem;
+                font-weight: 700;
+                color: #3498db;
+            }
+
+            .stat-label {
+                color: #7f8c8d;
+                font-size: 0.9rem;
+                margin-top: 0.5rem;
+            }
+
+            .modal-cambio-rol {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+            }
+
+            .modal-contenido {
+                background-color: white;
+                margin: 15% auto;
+                padding: 2rem;
+                border-radius: 10px;
+                width: 400px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            }
+
+            .modal-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .modal-header h2 {
+                margin: 0;
+                color: #2c3e50;
+            }
+
+            .modal-body {
+                margin-bottom: 1.5rem;
+            }
+
+            .modal-body select {
+                width: 100%;
+                padding: 0.75rem;
+                border: 2px solid #e0e0e0;
+                border-radius: 5px;
+                font-family: 'Poppins', sans-serif;
+                font-size: 1rem;
+            }
+
+            .modal-footer {
+                display: flex;
+                gap: 1rem;
+                justify-content: flex-end;
+            }
+
+            .modal-footer button {
+                padding: 0.75rem 1.5rem;
+                border: none;
+                border-radius: 5px;
+                font-weight: 600;
+                cursor: pointer;
+                font-family: 'Poppins', sans-serif;
+            }
+
+            .btn-confirmar {
+                background: #2ecc71;
+                color: white;
+            }
+
+            .btn-cancelar {
+                background: #95a5a6;
+                color: white;
+            }
+        </style>
     </head>
     <body>
-        <!-- Header simple -->
+        <!-- Header -->
         <header class="header">
             <nav class="navbar">
                 <div class="logo">
                     <img src="{% static 'images/LOGO-COLOR.svg' %}" alt="Alfa Hospital Logo" class="logo-img">
                 </div>
                 <div class="nav-links">
-                    <a href="{% url 'home' %}" class="login-btn">Volver</a>
+                    <span style="color: #2c3e50; font-weight: 500;">Admin: {{ request.session.usuario_nombre }}</span>
+                    <a href="{% url 'logout' %}" class="login-btn">Cerrar Sesión</a>
                 </div>
             </nav>
         </header>
 
         <main class="login-main">
             <section class="login-container">
-                <section class="login-card">
-                    <h1>Lista de usuarios registrados</h1>
-                    <ul>
-                        {% for usuario in usuarios %}
-                        <li>
-                            <strong>{{ usuario.nombres }} {{ usuario.apellidos }}</strong>
-                            <br>
-                            <span>{{ usuario.email }}</span>
-                            <span class="btn-yes-no">
-                                <form method="get" action="{% url 'update_user' usuario.id %}">
-                                    <button class="btn" type="submit">
-                                        Actualizar
-                                    </button>
-                                </form>
-                                <form method="post" action="{% url 'delete_user' usuario.id %}">
-                                    {% csrf_token %}
-                                    <button class="btn" type="submit" onclick="return confirm('Seguro de eliminar a {{usuario.nombres}} {{usuario.apellidos}}?')">
-                                        Eliminar
-                                    </button>
-                                </form>
-                            </span>
-                        </li>
-                        {% empty %}
-                        <li>No hay usuarios registrados</li>
-                        {%  endfor %}
-                    </ul>
-                </section>
-            </section>
-          
+                <!-- Mensajes de notificación -->
+                {% if messages %}
+                    <div class="messages" style="margin-bottom: 1.5rem;">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
+                <!-- Header con botón de crear usuario -->
+                <div class="admin-header">
+                    <div>
+                        <h1>Gestión de Usuarios</h1>
+                        <p style="color: #7f8c8d; margin: 0.5rem 0 0 0;">Administra todos los usuarios del sistema</p>
+                    </div>
+                    <a href="{% url 'create_user' %}" class="btn-crear-usuario">+ Crear Usuario</a>
+                </div>
+
+                <!-- Estadísticas rápidas -->
+                <div class="estadisticas">
+                    <div class="stat-card">
+                        <div class="stat-numero">{{ total_usuarios }}</div>
+                        <div class="stat-label">Total de Usuarios</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-numero">{{ total_admins }}</div>
+                        <div class="stat-label">Administradores</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-numero">{{ total_medicos }}</div>
+                        <div class="stat-label">Médicos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-numero">{{ total_usuarios_normales }}</div>
+                        <div class="stat-label">Usuarios</div>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="filtros-container">
+                    <div class="filtro-grupo">
+                        <label>Filtrar por rol:</label>
+                        <select id="filtro-rol">
+                            <option value="">Todos</option>
+                            <option value="admin">Administrador</option>
+                            <option value="medico">Médico</option>
+                            <option value="usuario">Usuario</option>
+                        </select>
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>Buscar:</label>
+                        <input type="text" id="filtro-buscar" placeholder="Nombre, email o cédula...">
+                    </div>
+                    <button class="btn-filtrar" onclick="aplicarFiltros()">Filtrar</button>
+                </div>
+
+                <!-- Tabla de usuarios -->
+                {% if usuarios %}
+                    <table class="usuarios-tabla">
+                        <thead>
+                            <tr>
+                                <th>Nombre Completo</th>
+                                <th>Email</th>
+                                <th>Cédula</th>
+                                <th>Teléfono</th>
+                                <th>Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                            <tr>
+                                <td><strong>{{ usuario.nombres }} {{ usuario.apellidos }}</strong></td>
+                                <td>{{ usuario.email }}</td>
+                                <td>{{ usuario.cedula }}</td>
+                                <td>{{ usuario.telefono }}</td>
+                                <td>
+                                    <span class="rol-badge rol-{{ usuario.rol }}">
+                                        {% if usuario.rol == 'admin' %}Administrador
+                                        {% elif usuario.rol == 'medico' %}Médico
+                                        {% else %}Usuario{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="acciones-btn">
+                                        <form method="get" action="{% url 'update_user' usuario.id %}" style="display: inline;">
+                                            <button class="btn-tabla btn-editar" type="submit">Editar</button>
+                                        </form>
+                                        <button class="btn-tabla btn-cambiar-rol" onclick="abrirModalRol({{ usuario.id }}, '{{ usuario.nombres }}', '{{ usuario.rol }}')">
+                                            Cambiar Rol
+                                        </button>
+                                        <form method="post" action="{% url 'delete_user' usuario.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button class="btn-tabla btn-eliminar" type="submit" 
+                                                onclick="return confirm('¿Eliminar a {{ usuario.nombres }} {{ usuario.apellidos }}? Esta acción no se puede deshacer.')">
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="sin-usuarios">
+                        <p>No hay usuarios registrados en el sistema</p>
+                        <a href="{% url 'create_user' %}" class="btn-crear-usuario">Crear primer usuario</a>
+                    </div>
+                {% endif %}
+            </section>
         </main>
 
+        <!-- Modal para cambiar rol -->
+        <div id="modal-rol" class="modal-cambio-rol">
+            <div class="modal-contenido">
+                <div class="modal-header">
+                    <h2>Cambiar Rol de Usuario</h2>
+                    <p id="usuario-nombre" style="color: #7f8c8d; margin: 0.5rem 0 0 0;"></p>
+                </div>
+                <form id="form-cambio-rol" method="post" action="#">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nuevo Rol:</label>
+                        <select name="nuevo_rol" id="nuevo-rol" required>
+                            <option value="">Seleccionar rol...</option>
+                            <option value="admin">Administrador</option>
+                            <option value="medico">Médico</option>
+                            <option value="usuario">Usuario</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancelar" onclick="cerrarModalRol()">Cancelar</button>
+                        <button type="submit" class="btn-confirmar">Cambiar Rol</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function abrirModalRol(usuarioId, usuarioNombre, rolActual) {
+                document.getElementById('modal-rol').style.display = 'block';
+                document.getElementById('usuario-nombre').textContent = 'Usuario: ' + usuarioNombre + ' (Rol actual: ' + rolActual + ')';
+                document.getElementById('form-cambio-rol').action = '/change_rol/' + usuarioId + '/';
+            }
+
+            function cerrarModalRol() {
+                document.getElementById('modal-rol').style.display = 'none';
+            }
+
+            function aplicarFiltros() {
+                const rol = document.getElementById('filtro-rol').value;
+                const buscar = document.getElementById('filtro-buscar').value;
+                console.log('Filtrar por rol:', rol, 'Buscar:', buscar);
+                // Aquí irá la lógica de filtrado
+            }
+
+            // Cerrar modal si hace clic fuera
+            window.onclick = function(event) {
+                const modal = document.getElementById('modal-rol');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        </script>
     </body>
 </html>
