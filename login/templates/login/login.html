@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión{% endblock %}
+
+{% block content %}
+<h2>Iniciar sesión</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div>
+        <label>{{ form.email.label }}</label><br>
+        {{ form.email }}
+    </div>
+
+    <div>
+        <label>{{ form.contraseña.label }}</label><br>
+        {{ form.contraseña }}
+    </div>
+
+    <button type="submit">Ingresar</button>
+</form>
+
+<p><a href="{% url 'login:register' %}">Crear cuenta</a></p>
+{% endblock %}

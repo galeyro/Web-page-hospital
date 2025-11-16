@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}AlfaHospital{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>Sistema de Administrador AlfaHospital</h1>
+        {% if request.user.is_authenticated %}
+            <p>Bienvenido, {{ request.user.email }}</p>
+            <a href="{% url 'login:logout' %}">Cerrar sesión</a>
+        {% endif %}
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- El contenido de cada vista va aquí -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>© 2025 AlfaHospital</p>
+    </footer>
+</body>
+</html>

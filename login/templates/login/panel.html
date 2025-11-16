@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Panel Admin{% endblock %}
+
+{% block content %}
+<h2>Panel administrativo</h2>
+
+<ul>
+    {% for t in tables %}
+        <li><a href="{{ t.url }}">{{ t.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}
