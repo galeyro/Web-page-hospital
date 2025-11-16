@@ -5,7 +5,7 @@
 <a href="{% url 'especialidad_create' %}">Nueva especialidad</a>
 
 <ul>
-{% for i in items %}
+{% for i in especialidades %}
     <li>
         {{ i }}
         <a href="{% url 'especialidad_edit' i.pk %}">Editar</a>

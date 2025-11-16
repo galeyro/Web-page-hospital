@@ -5,7 +5,7 @@
 <a href="{% url 'cita_create' %}">Nueva cita</a>
 
 <ul>
-{% for i in items %}
+{% for i in citas %}
     <li>
         {{ i }}
         <a href="{% url 'cita_edit' i.pk %}">Editar</a>

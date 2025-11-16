@@ -5,7 +5,7 @@
 <a href="{% url 'horario_create' %}">Nuevo horario</a>
 
 <ul>
-{% for i in items %}
+{% for i in horarios %}
     <li>
         {{ i }}
         <a href="{% url 'horario_edit' i.pk %}">Editar</a>

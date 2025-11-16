@@ -10,6 +10,7 @@
         {% if request.user.is_authenticated %}
             <p>Bienvenido, {{ request.user.email }}</p>
             <a href="{% url 'login:logout' %}">Cerrar sesión</a>
+            <a href="{% url 'login:panel' %}">Regresar al listado</a>
         {% endif %}
     </header>
 
