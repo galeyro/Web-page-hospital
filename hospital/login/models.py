@@ -67,6 +67,11 @@ def validar_edad(fecha_nacimiento):
 
 # Create your models here.
 class Usuario(models.Model):
+    ROLES_CHOICES = [
+        ('usuario', 'Usuario'),
+        ('medico', 'Médico'),
+        ('admin', 'Administrador')
+    ]
     nombres = models.CharField(max_length=100)
     apellidos = models.CharField(max_length=100)
     cedula = models.CharField(
@@ -88,6 +93,11 @@ class Usuario(models.Model):
         ('O', 'Otro')
     ])
     password = models.CharField(max_length=128)
+    rol = models.CharField(
+        max_length=10,
+        choices=ROLES_CHOICES,
+        default='usuario'  # Por defecto, nuevo usuario es 'usuario'
+    )
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

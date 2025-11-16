@@ -32,6 +32,33 @@ def login_required(view_func):
     wrapper.__doc__ = view_func.__doc__
     return wrapper
 
+# DECORADOR PARA VALIDAR ROLES
+def rol_required(rol_requerido):
+    """
+    Decorador que verifica si el usuario tiene el rol necesario.
+    """
+    def decorator(view_func):
+        def wrapper(request, *args, **kwargs):
+            # Primero verifica si está logueado
+            if 'usuario_id' not in request.session:
+                messages.warning(request, 'Debes iniciar sesión')
+                return redirect('login')
+            
+            # Obtener el usuario y su rol
+            usuario = Usuario.objects.get(id=request.session['usuario_id'])
+            
+            # Verificar si tiene el rol correcto
+            if usuario.rol != rol_requerido:
+                messages.error(request, f'No tienes permisos. Se requiere rol: {rol_requerido}')
+                return redirect('home')
+            
+            return view_func(request, *args, **kwargs)
+        
+        wrapper.__name__ = view_func.__name__
+        wrapper.__doc__ = view_func.__doc__
+        return wrapper
+    return decorator
+
 # Redirect functions for nav ----------------------------
 def index(request):
     return render(request, 'index.html')
@@ -92,13 +119,20 @@ def login_view(request):
             # Buscar usuario en BD
             usuario = Usuario.objects.get(email=email)
 
-            # Verificar contraseñá por ahora sin encriptar TODO: Encriptar
             if check_password(password, usuario.password): #Seguro hash
                 # Login exitoso -> crear sesion
                 request.session['usuario_id'] = usuario.id
                 request.session['usuario_nombre']=usuario.nombres
+                request.session['usuario_rol'] = usuario.rol 
                 messages.success(request, f'Bienvenido {usuario.nombres}')
-                return redirect('home')
+                
+                # Redirigir según el rol del usuario
+                if usuario.rol == 'admin':
+                    return redirect('control_users')
+                elif usuario.rol == 'medico':
+                    return redirect('dashboard_medico')
+                else:  # usuario normal
+                    return redirect('dashboard_usuario')
             else:
                 messages.error(request, 'Contraseña incorrecta')
 
@@ -121,7 +155,7 @@ def logout_view(request):
     return redirect('index')
 
 # Ver usuarios de DB
-@login_required
+@rol_required('admin')
 def control_users(request):
     # Obtener TODOS los usuarios de la DB
     usuarios = Usuario.objects.all()
@@ -131,6 +165,14 @@ def control_users(request):
         'usuarios': usuarios
     }
     return render(request, 'control_users.html', context)
+
+@rol_required('medico')
+def dashboard_medico(request):
+    return render(request, 'dashboard_medico.html')
+
+@rol_required('usuario')
+def dashboard_usuario(request):
+    return render(request, 'dashboard_usuario.html')
 
 # Delete specific user from DB
 @login_required
