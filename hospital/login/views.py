@@ -1,6 +1,7 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password, check_password
 from .models import Usuario
 
 # Create your views here.
@@ -51,7 +52,7 @@ def create_user(request):
         fecha_nacimiento = request.POST.get('fecha_nacimiento')
         genero = request.POST.get('genero')
         password = request.POST.get('password')
-
+        password_hash = make_password(password) #Hash
         try:
             # Crear y guardar el usuario
             usuario = Usuario(
@@ -62,7 +63,7 @@ def create_user(request):
                 email=email,
                 fecha_nacimiento=fecha_nacimiento,
                 genero=genero,
-                password=password  # TODO: Encriptar contraseña
+                password = password_hash
             )
             usuario.full_clean()  # Ejecuta las validaciones del modelo
             usuario.save()
@@ -92,7 +93,7 @@ def login_view(request):
             usuario = Usuario.objects.get(email=email)
 
             # Verificar contraseñá por ahora sin encriptar TODO: Encriptar
-            if usuario.password == password:
+            if check_password(password, usuario.password): #Seguro hash
                 # Login exitoso -> crear sesion
                 request.session['usuario_id'] = usuario.id
                 request.session['usuario_nombre']=usuario.nombres
@@ -206,7 +207,7 @@ def update_user(request, user_id):
             if genero:
                 usuario.genero = genero
             if password:
-                usuario.password = password
+                usuario.password = make_password(password) #hash
 
             usuario.full_clean()  # Ejecuta las validaciones del modelo
             usuario.save()
