@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Médicos</h2>
+
+<a href="{% url 'medico_create' %}">Nuevo médico</a>
+
+<ul>
+{% for i in items %}
+    <li>
+        {{ i }}
+        <a href="{% url 'medico_edit' i.pk %}">Editar</a>
+        <a href="{% url 'medico_delete' i.pk %}">Eliminar</a>
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

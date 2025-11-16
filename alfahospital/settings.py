@@ -30,9 +30,9 @@ ALLOWED_HOSTS = []
 # LOGIN URL y AUTH MODEL para hacer las redirecciones
 AUTH_USER_MODEL = "login.CustomUser"
 
-LOGIN_URL = "/login/"
+LOGIN_URL = "/"
 LOGIN_REDIRECT_URL = "/panel/"
-LOGOUT_REDIRECT_URL = "/login/"
+LOGOUT_REDIRECT_URL = "/"
 
 # Application definition
 

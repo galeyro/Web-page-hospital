@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Citas</h2>
+
+<a href="{% url 'cita_create' %}">Nueva cita</a>
+
+<ul>
+{% for i in items %}
+    <li>
+        {{ i }}
+        <a href="{% url 'cita_edit' i.pk %}">Editar</a>
+        <a href="{% url 'cita_delete' i.pk %}">Eliminar</a>
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

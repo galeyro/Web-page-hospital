@@ -57,8 +57,11 @@ def admin_required(view_func):
 def panel_view(request):
     # lista de tablas que el panel mostrará (ejemplo)
     tables = [
-        {"name": "Pacientes", "url": "/citas/pacientes/"},
+        {"name": "Especialidades", "url": "/citas/especialidades/"},
         {"name": "Médicos", "url": "/citas/medicos/"},
+        {"name": "Pacientes", "url": "/citas/pacientes/"},
+        {"name": "Consultorios", "url": "/citas/consultorios/"},
+        {"name": "Horarios", "url": "/citas/horarios/"},
         {"name": "Citas", "url": "/citas/citas/"},
     ]
     return render(request, "login/panel.html", {"tables": tables})

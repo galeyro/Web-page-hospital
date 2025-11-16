@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Consultorios</h2>
+
+<a href="{% url 'consultorio_create' %}">Nuevo consultorio</a>
+
+<ul>
+{% for i in items %}
+    <li>
+        {{ i }}
+        <a href="{% url 'consultorio_edit' i.pk %}">Editar</a>
+        <a href="{% url 'consultorio_delete' i.pk %}">Eliminar</a>
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}
