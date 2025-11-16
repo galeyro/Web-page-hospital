@@ -27,6 +27,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# LOGIN URL y AUTH MODEL para hacer las redirecciones
+AUTH_USER_MODEL = "login.CustomUser"
+
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/panel/"
+LOGOUT_REDIRECT_URL = "/login/"
 
 # Application definition
 
@@ -37,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'login',       # Login es la app para gestionar los usuarios de la aplicacion y del panel de administrador.
+    'login',       # Login es la app para gestionar los usuarios de la aplicacion y del panel de admin
     'citasmedicas' # Citasmedicas es la app para gestionar todo el tema de las citas en si
 ]
 
