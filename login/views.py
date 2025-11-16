@@ -54,7 +54,6 @@ def admin_required(view_func):
 
 
 @login_required
-@admin_required
 def panel_view(request):
     # lista de tablas que el panel mostrará (ejemplo)
     tables = [
