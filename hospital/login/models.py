@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 # Validador de cédula ecuatoriana
 def validar_cedula_ecuador(cedula):
@@ -44,6 +46,25 @@ def validar_cedula_ecuador(cedula):
     if digito_verificador_calculado != digito_verificador_real:
         raise ValidationError('La cédula no es válida (dígito verificador incorrecto)')
 
+# Validador de telefono valido
+def validar_telefono(telefono):
+    """
+    Valida que el teléfono tenga exactamente 10 dígitos
+    """
+    if not telefono.isdigit() or len(telefono) != 10:
+        raise ValidationError('Número de teléfono invalido')
+
+# Validador de edad para crear usuario
+def validar_edad(fecha_nacimiento):
+    """
+    Valida que el usuario sea mayor de 18 años
+    """
+    hoy = date.today()
+    edad = relativedelta(hoy, fecha_nacimiento).years
+    
+    if edad < 18:
+        raise ValidationError('El usuario debe ser mayor de 18 años')
+
 # Create your models here.
 class Usuario(models.Model):
     nombres = models.CharField(max_length=100)
@@ -53,9 +74,14 @@ class Usuario(models.Model):
         unique=True,
         validators=[validar_cedula_ecuador]
     )
-    telefono = models.CharField(max_length=15)
+    telefono = models.CharField(
+        max_length=15,
+        validators=[validar_telefono]
+        )
     email = models.EmailField(unique=True)
-    fecha_nacimiento = models.DateField()
+    fecha_nacimiento = models.DateField(
+        validators=[validar_edad]
+    )
     genero = models.CharField(max_length=1, choices=[
         ('M', 'Masculino'),
         ('F', 'Femenino'),
