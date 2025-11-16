@@ -1,2 +1,2 @@
-release: python manage.py migrate && python create_admin.py
+release: python manage.py migrate --no-input && python create_admin.py
 web: gunicorn hospital.wsgi:application --log-file -
