@@ -4,14 +4,14 @@ from .models import Especialidad, Consultorio, Medico, Horario, Cita
 
 @admin.register(Especialidad)
 class EspecialidadAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'duracion_cita', 'descripcion')
+    list_display = ('nombre', 'duracion_cita')
     search_fields = ('nombre',)
     ordering = ('nombre',)
 
 
 @admin.register(Consultorio)
 class ConsultorioAdmin(admin.ModelAdmin):
-    list_display = ('numero', 'tipo', 'descripcion')
+    list_display = ('numero', 'tipo')
     list_filter = ('tipo',)
     search_fields = ('numero',)
     ordering = ('numero',)

@@ -155,18 +155,13 @@ class CreateConsultorioForm(forms.ModelForm):
     
     class Meta:
         model = Consultorio
-        fields = ['numero', 'tipo', 'descripcion']
+        fields = ['numero', 'tipo']
         widgets = {
             'numero': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Número del consultorio'
             }),
             'tipo': forms.Select(attrs={'class': 'form-control'}),
-            'descripcion': forms.Textarea(attrs={
-                'class': 'form-control',
-                'placeholder': 'Descripción (opcional)',
-                'rows': 3
-            }),
         }
     
     def clean_numero(self):
@@ -226,16 +221,11 @@ class CreateEspecialidadForm(forms.ModelForm):
     
     class Meta:
         model = Especialidad
-        fields = ['nombre', 'descripcion', 'duracion_cita']
+        fields = ['nombre', 'duracion_cita']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Nombre de la especialidad'
-            }),
-            'descripcion': forms.Textarea(attrs={
-                'class': 'form-control',
-                'placeholder': 'Descripción (opcional)',
-                'rows': 3
             }),
             'duracion_cita': forms.Select(attrs={'class': 'form-control'})
         }

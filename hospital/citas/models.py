@@ -10,7 +10,6 @@ from .validators import validar_cedula_ecuador
 # ===== ESPECIALIDADES =====
 class Especialidad(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
-    descripcion = models.TextField(blank=True)
     duracion_cita = models.IntegerField(
         choices=[(15, '15 minutos'), (30, '30 minutos')],
         default=30
@@ -32,7 +31,6 @@ class Consultorio(models.Model):
 
     numero = models.IntegerField(unique=True)
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
-    descripcion = models.TextField(blank=True)
 
     class Meta:
         ordering = ['numero']
