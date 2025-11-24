@@ -152,6 +152,15 @@
                 box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
             }
 
+            .btn-ver-horarios {
+                background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            }
+
+            .btn-ver-horarios:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+            }
+
             /* ESTADÍSTICAS */
             .estadisticas-section {
                 margin-bottom: 3rem;
@@ -692,6 +701,10 @@
                         <a href="{% url 'create_horario' %}" class="btn-accion btn-horario" title="Crear nuevo horario">
                             <i class="fas fa-clock"></i>
                             <span>Horario</span>
+                        </a>
+                        <a href="{% url 'list_horarios' %}" class="btn-accion btn-ver-horarios" title="Ver horarios existentes">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Ver Horarios</span>
                         </a>
                     </div>
                 </div>

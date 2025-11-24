@@ -38,4 +38,5 @@ urlpatterns = [
     path('create_consultorio/', views.create_consultorio, name='create_consultorio'),
     path('create_horario/', views.create_horario, name='create_horario'),
     path('create_especialidad/', views.create_especialidad, name='create_especialidad'),
+    path('list_horarios/', views.list_horarios, name='list_horarios'),
 ]

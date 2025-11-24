@@ -373,6 +373,27 @@ def create_especialidad(request):
     context = {'form': form}
     return render(request, 'create_especialidad.html', context)
 
+# ===== LISTAR HORARIOS =====
+@rol_required('admin')
+def list_horarios(request):
+    """Listar horarios con filtro por médico"""
+    medicos = Medico.objects.select_related('usuario').order_by('usuario__nombres')
+    
+    medico_id = request.GET.get('medico_id')
+    if medico_id:
+        horarios = Horario.objects.filter(medico_id=medico_id).select_related('medico', 'medico__usuario').order_by('dia_semana', 'hora_inicio')
+    else:
+        # Si no hay selección, no mostramos horarios (o podríamos mostrar todos)
+        # Según requerimiento: "solo el seleccionado cargue sus horarios"
+        horarios = None
+    
+    context = {
+        'medicos': medicos,
+        'horarios': horarios,
+        'medico_seleccionado': int(medico_id) if medico_id else None
+    }
+    return render(request, 'list_horarios.html', context)
+
 # Delete specific user from DB
 @login_required
 def delete_user(request, user_id):
