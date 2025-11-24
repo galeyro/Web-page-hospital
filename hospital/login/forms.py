@@ -83,7 +83,7 @@ class CreateMedicoForm(forms.Form):
         label='Tipo de Médico'
     )
     consultorio = forms.ModelChoiceField(
-        queryset=Consultorio.objects.filter(activo=True),
+        queryset=Consultorio.objects.all(),
         required=False,
         widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_consultorio'}),
         label='Consultorio (solo para internos)'
@@ -92,7 +92,7 @@ class CreateMedicoForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Hacer el queryset dinámico para actualizar en cada instancia
-        self.fields['consultorio'].queryset = Consultorio.objects.filter(activo=True)
+        self.fields['consultorio'].queryset = Consultorio.objects.all()
     
     def clean(self):
         cleaned_data = super().clean()
@@ -155,7 +155,7 @@ class CreateConsultorioForm(forms.ModelForm):
     
     class Meta:
         model = Consultorio
-        fields = ['numero', 'tipo', 'descripcion', 'activo']
+        fields = ['numero', 'tipo', 'descripcion']
         widgets = {
             'numero': forms.NumberInput(attrs={
                 'class': 'form-control',
@@ -167,7 +167,6 @@ class CreateConsultorioForm(forms.ModelForm):
                 'placeholder': 'Descripción (opcional)',
                 'rows': 3
             }),
-            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
     
     def clean_numero(self):

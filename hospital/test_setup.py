@@ -50,8 +50,7 @@ for cons in consultorios:
         numero=cons['numero'],
         defaults={
             'tipo': cons['tipo'],
-            'descripcion': cons['descripcion'],
-            'activo': True
+            'descripcion': cons['descripcion']
         }
     )
     status = "✅ Creado" if created else "ℹ️  Existía"
@@ -67,7 +66,7 @@ else:
 # 4. Verificar disponibilidad de especialidades y consultorios en formularios
 print(f"\n📊 Estadísticas:")
 print(f"  - Especialidades activas: {Especialidad.objects.count()}")
-print(f"  - Consultorios activos: {Consultorio.objects.filter(activo=True).count()}")
+print(f"  - Consultorios activos: {Consultorio.objects.count()}")
 print(f"  - Médicos totales: {Medico.objects.count()}")
 print(f"  - Horarios: {Horario.objects.count()}")
 

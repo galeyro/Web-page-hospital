@@ -11,8 +11,8 @@ class EspecialidadAdmin(admin.ModelAdmin):
 
 @admin.register(Consultorio)
 class ConsultorioAdmin(admin.ModelAdmin):
-    list_display = ('numero', 'tipo', 'activo', 'descripcion')
-    list_filter = ('tipo', 'activo')
+    list_display = ('numero', 'tipo', 'descripcion')
+    list_filter = ('tipo',)
     search_fields = ('numero',)
     ordering = ('numero',)
 

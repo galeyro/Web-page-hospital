@@ -33,7 +33,6 @@ class Consultorio(models.Model):
     numero = models.IntegerField(unique=True)
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
     descripcion = models.TextField(blank=True)
-    activo = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['numero']
