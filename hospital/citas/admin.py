@@ -19,21 +19,21 @@ class ConsultorioAdmin(admin.ModelAdmin):
 
 @admin.register(Medico)
 class MedicoAdmin(admin.ModelAdmin):
-    list_display = ('get_nombre_medico', 'especialidad', 'tipo', 'consultorio', 'activo')
-    list_filter = ('tipo', 'activo', 'especialidad')
-    search_fields = ('usuario__nombres', 'usuario__apellidos', 'numero_licencia')
+    list_display = ('get_nombre_medico', 'especialidad', 'tipo', 'consultorio')
+    list_filter = ('tipo', 'especialidad')
+    search_fields = ('usuario__nombres', 'usuario__apellidos')
     readonly_fields = ('fecha_registro', 'usuario')
     ordering = ('usuario__nombres',)
 
     fieldsets = (
         ('Información Personal', {
-            'fields': ('usuario', 'numero_licencia')
+            'fields': ('usuario',)
         }),
         ('Información Profesional', {
             'fields': ('especialidad', 'tipo', 'consultorio')
         }),
         ('Estado', {
-            'fields': ('activo', 'fecha_registro')
+            'fields': ('fecha_registro',)
         }),
     )
 

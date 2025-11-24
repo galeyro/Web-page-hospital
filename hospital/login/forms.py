@@ -82,14 +82,6 @@ class CreateMedicoForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         label='Tipo de Médico'
     )
-    numero_licencia = forms.CharField(
-        max_length=50,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Número de Licencia (opcional)'
-        })
-    )
     consultorio = forms.ModelChoiceField(
         queryset=Consultorio.objects.filter(activo=True),
         required=False,

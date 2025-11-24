@@ -166,7 +166,7 @@ def control_users(request):
     # Estadísticas de médicos
     total_medicos_internos = medicos.filter(tipo='interno').count()
     total_medicos_externos = medicos.filter(tipo='externo').count()
-    total_medicos_activos = medicos.filter(activo=True).count()
+    total_medicos_activos = medicos.count()
     
     # Estadísticas de consultorios
     total_consultorios_internos = Consultorio.objects.filter(tipo='interno').count()
@@ -276,7 +276,6 @@ def create_medico(request):
                     usuario=usuario,
                     especialidad=form.cleaned_data['especialidad'],
                     tipo=form.cleaned_data['tipo'],
-                    numero_licencia=form.cleaned_data.get('numero_licencia', ''),
                     consultorio=form.cleaned_data.get('consultorio')
                 )
                 medico.full_clean()

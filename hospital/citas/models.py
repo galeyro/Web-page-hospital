@@ -52,7 +52,6 @@ class Medico(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='medico')
     especialidad = models.ForeignKey(Especialidad, on_delete=models.SET_NULL, null=True)
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
-    numero_licencia = models.CharField(max_length=50, blank=True)
     consultorio = models.ForeignKey(
         Consultorio, 
         on_delete=models.SET_NULL, 
@@ -60,7 +59,6 @@ class Medico(models.Model):
         blank=True,
         related_name='medicos'
     )
-    activo = models.BooleanField(default=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     class Meta:
