@@ -121,13 +121,6 @@ class Horario(models.Model):
 
 # ===== CITAS =====
 class Cita(models.Model):
-    ESTADO_CHOICES = [
-        ('agendada', 'Agendada'),
-        ('completada', 'Completada'),
-        ('cancelada', 'Cancelada'),
-        ('no_asistio', 'No Asistió'),
-    ]
-
     paciente = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='citas')
     medico = models.ForeignKey(Medico, on_delete=models.CASCADE, related_name='citas')
     consultorio = models.ForeignKey(Consultorio, on_delete=models.SET_NULL, null=True, blank=True)
@@ -135,8 +128,6 @@ class Cita(models.Model):
     fecha = models.DateField()
     hora_inicio = models.TimeField()
     hora_fin = models.TimeField()
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='agendada')
-    razon_cancelacion = models.TextField(blank=True, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -173,8 +164,7 @@ class Cita(models.Model):
         # 4) Validar que no haya solapamiento con otras citas del médico
         solapadas = Cita.objects.filter(
             medico=self.medico,
-            fecha=self.fecha,
-            estado__in=['agendada', 'completada']  # No contar canceladas
+            fecha=self.fecha
         ).exclude(pk=self.pk).filter(
             Q(hora_inicio__lt=self.hora_fin) & Q(hora_fin__gt=self.hora_inicio)
         )

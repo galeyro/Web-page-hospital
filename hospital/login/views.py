@@ -174,8 +174,6 @@ def control_users(request):
     
     # Estadísticas de citas
     total_citas = citas.count()
-    citas_agendadas = citas.filter(estado='agendada').count()
-    citas_completadas = citas.filter(estado='completada').count()
     
     # Especialidades
     especialidades = Especialidad.objects.all().count()
@@ -202,8 +200,6 @@ def control_users(request):
         
         # Stats citas
         'total_citas': total_citas,
-        'citas_agendadas': citas_agendadas,
-        'citas_completadas': citas_completadas,
         
         # Stats especialidades
         'total_especialidades': especialidades,
