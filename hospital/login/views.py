@@ -92,6 +92,11 @@ def create_user(request):
             usuario.full_clean()  # Ejecuta las validaciones del modelo
             usuario.save()
             messages.success(request, 'Usuario creado exitosamente!')
+            
+            # Si el que crea es admin, volver al panel de control
+            if request.session.get('usuario_rol') == 'admin':
+                return redirect('control_users')
+                
             return redirect('login')
         
         except ValidationError as e:
