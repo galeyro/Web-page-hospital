@@ -79,6 +79,13 @@ class Medico(models.Model):
                 raise ValidationError("Los médicos internos solo pueden usar consultorios internos.")
             if self.tipo == 'externo' and self.consultorio.tipo != 'externo':
                 raise ValidationError("Los médicos externos solo pueden usar consultorios externos.")
+            
+            # Validación: Exclusividad (Un consultorio no puede tener dos médicos asignados)
+            ocupante = Medico.objects.filter(consultorio=self.consultorio).exclude(pk=self.pk).first()
+            if ocupante:
+                raise ValidationError(
+                    f"El consultorio {self.consultorio.numero} ya está asignado al Dr. {ocupante.usuario.nombres} {ocupante.usuario.apellidos}."
+                )
 
     def __str__(self):
         return f"Dr. {self.usuario.nombres} - {self.especialidad.nombre if self.especialidad else 'Sin especialidad'}"
