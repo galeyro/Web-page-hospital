@@ -1,61 +1,939 @@
 {% load static %}
 <!doctype html>
-<html lang="en-US">
+<html lang="es">
     <head>
         <meta charset="utf-8"/>
-        <meta name="description" content="AlfaHospital page to control the users in the DB"/>
+        <meta name="description" content="AlfaHospital - Gestión de Usuarios"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <meta name="author" content="AlfaHospital"/>
         <link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
-        <title>AlfaHospital - Inicio</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <title>AlfaHospital - Gestión de Usuarios</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Poppins', sans-serif;
+                background: #f5f7fa;
+            }
+
+            .login-main {
+                padding: 2rem;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+
+            .login-container {
+                background: white;
+                border-radius: 15px;
+                padding: 2.5rem;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+
+            /* HEADER */
+            .page-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 2.5rem;
+                padding-bottom: 2rem;
+                border-bottom: 2px solid #f0f3f7;
+            }
+
+            .page-header-info h1 {
+                color: #2c3e50;
+                font-size: 2rem;
+                font-weight: 700;
+                margin-bottom: 0.5rem;
+            }
+
+            .page-header-info p {
+                color: #7f8c8d;
+                font-size: 0.95rem;
+            }
+
+            /* ACCIONES RAPIDAS */
+            .acciones-rapidas-section {
+                margin-bottom: 3rem;
+            }
+
+            .section-title {
+                color: #2c3e50;
+                font-size: 1.1rem;
+                font-weight: 700;
+                margin-bottom: 1.2rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .section-title i {
+                color: #667eea;
+                font-size: 1.2rem;
+            }
+
+            .acciones-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 1rem;
+            }
+
+            .btn-accion {
+                padding: 0.75rem 1rem;
+                border: none;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 0.9rem;
+                color: white;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                min-height: 100px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .btn-accion i {
+                font-size: 1.8rem;
+            }
+
+            .btn-usuario {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            .btn-usuario:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+            }
+
+            .btn-especialidad {
+                background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            }
+
+            .btn-especialidad:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 6px 16px rgba(26, 188, 156, 0.4);
+            }
+
+            .btn-medico {
+                background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            }
+
+            .btn-medico:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 6px 16px rgba(155, 89, 182, 0.4);
+            }
+
+            .btn-consultorio {
+                background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            }
+
+            .btn-consultorio:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4);
+            }
+
+            .btn-horario {
+                background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+            }
+
+            .btn-horario:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
+            }
+
+            .btn-ver-horarios {
+                background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            }
+
+            .btn-ver-horarios:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+            }
+
+            /* ESTADÍSTICAS */
+            .estadisticas-section {
+                margin-bottom: 3rem;
+            }
+
+            .estadisticas-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 1.2rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                background: white;
+                padding: 1.5rem;
+                border-radius: 10px;
+                border-left: 4px solid #667eea;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+                transition: all 0.3s ease;
+            }
+
+            .stat-card:hover {
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+                transform: translateY(-2px);
+            }
+
+            .stat-numero {
+                font-size: 2.2rem;
+                font-weight: 700;
+                color: #667eea;
+                margin-bottom: 0.5rem;
+            }
+
+            .stat-label {
+                color: #7f8c8d;
+                font-size: 0.85rem;
+                font-weight: 500;
+            }
+
+            /* FILTROS */
+            .filtros-section {
+                margin-bottom: 2.5rem;
+                background: #f8f9fa;
+                padding: 1.5rem;
+                border-radius: 10px;
+                border: 1px solid #e9ecef;
+            }
+
+            .filtros-container {
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                align-items: flex-end;
+            }
+
+            .filtro-grupo {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                flex: 1;
+                min-width: 200px;
+            }
+
+            .filtro-grupo label {
+                font-weight: 600;
+                color: #2c3e50;
+                font-size: 0.9rem;
+            }
+
+            .filtro-grupo select,
+            .filtro-grupo input {
+                padding: 0.7rem;
+                border: 2px solid #e0e0e0;
+                border-radius: 6px;
+                font-family: 'Poppins', sans-serif;
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+            }
+
+            .filtro-grupo select:focus,
+            .filtro-grupo input:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+
+            .btn-filtrar {
+                background: #667eea;
+                color: white;
+                padding: 0.7rem 1.5rem;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                font-size: 0.9rem;
+            }
+
+            .btn-filtrar:hover {
+                background: #5568d3;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            }
+
+            /* TABLA */
+            .tabla-section {
+                margin-bottom: 2rem;
+            }
+
+            .tabla-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+            }
+
+            .tabla-header h3 {
+                color: #2c3e50;
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+
+            .usuarios-tabla {
+                width: 100%;
+                border-collapse: collapse;
+                background: white;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            }
+
+            .usuarios-tabla thead {
+                background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+                color: white;
+            }
+
+            .usuarios-tabla th {
+                padding: 1.2rem;
+                text-align: left;
+                font-weight: 600;
+                font-size: 0.9rem;
+                letter-spacing: 0.5px;
+            }
+
+            .usuarios-tabla tbody tr {
+                border-bottom: 1px solid #f0f3f7;
+                transition: background 0.2s;
+            }
+
+            .usuarios-tabla tbody tr:hover {
+                background: #f8f9fa;
+            }
+
+            .usuarios-tabla td {
+                padding: 1.2rem;
+                color: #34495e;
+                font-size: 0.9rem;
+            }
+
+            .usuarios-tabla strong {
+                color: #2c3e50;
+                font-weight: 600;
+            }
+
+            .rol-badge {
+                display: inline-block;
+                padding: 0.4rem 0.9rem;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-align: center;
+            }
+
+            .rol-admin {
+                background: #ffe5e5;
+                color: #c0392b;
+            }
+
+            .rol-medico {
+                background: #e3f2fd;
+                color: #1565c0;
+            }
+
+            .rol-usuario {
+                background: #f0f0f0;
+                color: #424242;
+            }
+
+            .acciones-btn {
+                display: flex;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+
+            .btn-tabla {
+                padding: 0.5rem 0.75rem;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.8rem;
+                transition: all 0.2s ease;
+                font-family: 'Poppins', sans-serif;
+                white-space: nowrap;
+            }
+
+            .btn-editar {
+                background: #3498db;
+                color: white;
+            }
+
+            .btn-editar:hover {
+                background: #2980b9;
+            }
+
+            .btn-eliminar {
+                background: #e74c3c;
+                color: white;
+            }
+
+            .btn-eliminar:hover {
+                background: #c0392b;
+            }
+
+            .btn-cambiar-rol {
+                background: #f39c12;
+                color: white;
+            }
+
+            .btn-cambiar-rol:hover {
+                background: #d68910;
+            }
+
+            /* SIN USUARIOS */
+            .sin-usuarios {
+                text-align: center;
+                padding: 4rem 2rem;
+                color: #7f8c8d;
+                background: #f8f9fa;
+                border-radius: 10px;
+                border: 2px dashed #e0e0e0;
+            }
+
+            .sin-usuarios p {
+                margin-bottom: 1.5rem;
+                font-size: 1.1rem;
+            }
+
+            /* MODAL */
+            .modal-cambio-rol {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.6);
+                animation: fadeIn 0.3s ease;
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            .modal-contenido {
+                background-color: white;
+                margin: 10% auto;
+                padding: 2.5rem;
+                border-radius: 10px;
+                width: 450px;
+                max-width: 90%;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                animation: slideUp 0.3s ease;
+            }
+
+            @keyframes slideUp {
+                from {
+                    transform: translateY(30px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .modal-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .modal-header h2 {
+                margin: 0;
+                color: #2c3e50;
+                font-size: 1.5rem;
+            }
+
+            .modal-body {
+                margin-bottom: 2rem;
+            }
+
+            .modal-body label {
+                display: block;
+                margin-bottom: 0.7rem;
+                font-weight: 600;
+                color: #2c3e50;
+            }
+
+            .modal-body select {
+                width: 100%;
+                padding: 0.8rem;
+                border: 2px solid #e0e0e0;
+                border-radius: 6px;
+                font-family: 'Poppins', sans-serif;
+                font-size: 0.95rem;
+                transition: all 0.3s ease;
+            }
+
+            .modal-body select:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+
+            .modal-footer {
+                display: flex;
+                gap: 1rem;
+                justify-content: flex-end;
+            }
+
+            .modal-footer button {
+                padding: 0.8rem 1.5rem;
+                border: none;
+                border-radius: 6px;
+                font-weight: 600;
+                cursor: pointer;
+                font-family: 'Poppins', sans-serif;
+                font-size: 0.95rem;
+                transition: all 0.3s ease;
+            }
+
+            .btn-confirmar {
+                background: #27ae60;
+                color: white;
+            }
+
+            .btn-confirmar:hover {
+                background: #229954;
+            }
+
+            .btn-cancelar {
+                background: #95a5a6;
+                color: white;
+            }
+
+            .btn-cancelar:hover {
+                background: #7f8c8d;
+            }
+
+            /* MENSAJES */
+            .messages {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .alert {
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                border-left: 4px solid;
+                animation: slideDown 0.3s ease;
+            }
+
+            @keyframes slideDown {
+                from {
+                    transform: translateY(-10px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .alert-success {
+                background: #d4edda;
+                border-color: #28a745;
+                color: #155724;
+            }
+
+            .alert-error {
+                background: #f8d7da;
+                border-color: #dc3545;
+                color: #721c24;
+            }
+
+            .alert-warning {
+                background: #fff3cd;
+                border-color: #ffc107;
+                color: #856404;
+            }
+
+            .alert-info {
+                background: #d1ecf1;
+                border-color: #17a2b8;
+                color: #0c5460;
+            }
+
+            /* RESPONSIVE */
+            @media (max-width: 1024px) {
+                .acciones-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                }
+
+                .estadisticas-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                }
+
+                .login-container {
+                    padding: 2rem;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .login-main {
+                    padding: 1rem;
+                }
+
+                .login-container {
+                    padding: 1.5rem;
+                    border-radius: 10px;
+                }
+
+                .page-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 1rem;
+                }
+
+                .acciones-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                }
+
+                .estadisticas-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+
+                .filtros-container {
+                    flex-direction: column;
+                }
+
+                .filtro-grupo {
+                    min-width: 100%;
+                }
+
+                .usuarios-tabla {
+                    font-size: 0.8rem;
+                }
+
+                .usuarios-tabla th,
+                .usuarios-tabla td {
+                    padding: 0.8rem 0.5rem;
+                }
+
+                .btn-tabla {
+                    padding: 0.4rem 0.6rem;
+                    font-size: 0.7rem;
+                }
+
+                .acciones-btn {
+                    gap: 0.3rem;
+                }
+
+                .modal-contenido {
+                    width: 90%;
+                    padding: 1.5rem;
+                }
+            }
+        </style>
     </head>
     <body>
-        <!-- Header simple -->
+        <!-- Header -->
         <header class="header">
             <nav class="navbar">
                 <div class="logo">
                     <img src="{% static 'images/LOGO-COLOR.svg' %}" alt="Alfa Hospital Logo" class="logo-img">
                 </div>
                 <div class="nav-links">
-                    <a href="{% url 'home' %}" class="login-btn">Volver</a>
+                    <span style="color: #2c3e50; font-weight: 500;">Admin: {{ request.session.usuario_nombre }}</span>
+                    <a href="{% url 'logout' %}" class="login-btn">Cerrar Sesión</a>
                 </div>
             </nav>
         </header>
 
         <main class="login-main">
             <section class="login-container">
-                <section class="login-card">
-                    <h1>Lista de usuarios registrados</h1>
-                    <ul>
-                        {% for usuario in usuarios %}
-                        <li>
-                            <strong>{{ usuario.nombres }} {{ usuario.apellidos }}</strong>
-                            <br>
-                            <span>{{ usuario.email }}</span>
-                            <span class="btn-yes-no">
-                                <form method="get" action="{% url 'update_user' usuario.id %}">
-                                    <button class="btn" type="submit">
-                                        Actualizar
-                                    </button>
-                                </form>
-                                <form method="post" action="{% url 'delete_user' usuario.id %}">
-                                    {% csrf_token %}
-                                    <button class="btn" type="submit" onclick="return confirm('Seguro de eliminar a {{usuario.nombres}} {{usuario.apellidos}}?')">
-                                        Eliminar
-                                    </button>
-                                </form>
-                            </span>
-                        </li>
-                        {% empty %}
-                        <li>No hay usuarios registrados</li>
-                        {%  endfor %}
-                    </ul>
-                </section>
-            </section>
-          
+                <!-- Mensajes de notificación -->
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
+                <!-- Header de página -->
+                <div class="page-header">
+                    <div class="page-header-info">
+                        <h1>📊 Gestión de Sistema</h1>
+                        <p>Administra usuarios, médicos, especialidades y más</p>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: ACCIONES RÁPIDAS -->
+                <div class="acciones-rapidas-section">
+            
+                    <div class="acciones-grid">
+                        <a href="{% url 'create_user' %}" class="btn-accion btn-usuario" title="Crear nuevo usuario">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Nuevo Usuario</span>
+                        </a>
+                        <a href="{% url 'create_especialidad' %}" class="btn-accion btn-especialidad" title="Crear nueva especialidad">
+                            <i class="fas fa-stethoscope"></i>
+                            <span>Nueva Especialidad</span>
+                        </a>
+                        <a href="{% url 'create_medico' %}" class="btn-accion btn-medico" title="Crear nuevo médico">
+                            <i class="fas fa-user-md"></i>
+                            <span>Nuevo Médico</span>
+                        </a>
+                        <a href="{% url 'create_consultorio' %}" class="btn-accion btn-consultorio" title="Crear nuevo consultorio">
+                            <i class="fas fa-hospital"></i>
+                            <span>Nuevo Consultorio</span>
+                        </a>
+                        <a href="{% url 'create_horario' %}" class="btn-accion btn-horario" title="Crear nuevo horario">
+                            <i class="fas fa-clock"></i>
+                            <span>Nuevo Horario</span>
+                        </a>
+                        <a href="{% url 'list_horarios' %}" class="btn-accion btn-ver-horarios" title="Ver horarios existentes">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Ver Horarios</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: ESTADÍSTICAS -->
+                <div class="estadisticas-section">
+                    <div class="section-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Estadísticas del sistema
+                    </div>
+
+                    <!-- Estadísticas de Usuarios -->
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="color: #34495e; font-size: 0.95rem; margin-bottom: 0.8rem; font-weight: 600;">Usuarios</h4>
+                        <div class="estadisticas-grid">
+                            <div class="stat-card" style="border-left-color: #667eea;">
+                                <div class="stat-numero" style="color: #667eea;">{{ total_usuarios }}</div>
+                                <div class="stat-label">Total de Usuarios</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #e74c3c;">
+                                <div class="stat-numero" style="color: #e74c3c;">{{ total_admins }}</div>
+                                <div class="stat-label">Administradores</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #3498db;">
+                                <div class="stat-numero" style="color: #3498db;">{{ total_medicos_usuarios }}</div>
+                                <div class="stat-label">Médicos (Usuarios)</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #27ae60;">
+                                <div class="stat-numero" style="color: #27ae60;">{{ total_usuarios_normales }}</div>
+                                <div class="stat-label">Pacientes</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas de Médicos -->
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="color: #34495e; font-size: 0.95rem; margin-bottom: 0.8rem; font-weight: 600;">Médicos y Especialidades</h4>
+                        <div class="estadisticas-grid">
+                            <div class="stat-card" style="border-left-color: #9b59b6;">
+                                <div class="stat-numero" style="color: #9b59b6;">{{ total_medicos_internos }}</div>
+                                <div class="stat-label">Médicos Internos</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #f39c12;">
+                                <div class="stat-numero" style="color: #f39c12;">{{ total_medicos_externos }}</div>
+                                <div class="stat-label">Médicos Externos</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #1abc9c;">
+                                <div class="stat-numero" style="color: #1abc9c;">{{ total_especialidades }}</div>
+                                <div class="stat-label">Especialidades</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #16a085;">
+                                <div class="stat-numero" style="color: #16a085;">{{ total_medicos_activos }}</div>
+                                <div class="stat-label">Médicos Activos</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas de Citas -->
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="color: #34495e; font-size: 0.95rem; margin-bottom: 0.8rem; font-weight: 600;">Citas</h4>
+                        <div class="estadisticas-grid">
+                            <div class="stat-card" style="border-left-color: #34495e;">
+                                <div class="stat-numero" style="color: #34495e;">{{ total_citas }}</div>
+                                <div class="stat-label">Total de Citas</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #3498db;">
+                                <div class="stat-numero" style="color: #3498db;">{{ citas_agendadas }}</div>
+                                <div class="stat-label">Citas Agendadas</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #27ae60;">
+                                <div class="stat-numero" style="color: #27ae60;">{{ citas_completadas }}</div>
+                                <div class="stat-label">Citas Completadas</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #2c3e50;">
+                                <div class="stat-numero" style="color: #2c3e50;">{{ total_consultorios_internos }}</div>
+                                <div class="stat-label">Consultorios Internos</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas de Infraestructura -->
+                    <div>
+                        <h4 style="color: #34495e; font-size: 0.95rem; margin-bottom: 0.8rem; font-weight: 600;">Infraestructura</h4>
+                        <div class="estadisticas-grid">
+                            <div class="stat-card" style="border-left-color: #e74c3c;">
+                                <div class="stat-numero" style="color: #e74c3c;">{{ total_consultorios_externos }}</div>
+                                <div class="stat-label">Consultorios Externos</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: FILTROS -->
+                <div class="filtros-section">
+                    <div class="filtros-container">
+                        <div class="filtro-grupo">
+                            <label for="filtro-rol">Filtrar por rol:</label>
+                            <select id="filtro-rol">
+                                <option value="">Todos los roles</option>
+                                <option value="admin">Administrador</option>
+                                <option value="medico">Médico</option>
+                                <option value="usuario">Usuario</option>
+                            </select>
+                        </div>
+                        <div class="filtro-grupo">
+                            <label for="filtro-buscar">Buscar usuario:</label>
+                            <input type="text" id="filtro-buscar" placeholder="Nombre, email o cédula...">
+                        </div>
+                        <button class="btn-filtrar" onclick="aplicarFiltros()">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: TABLA DE USUARIOS -->
+                <div class="tabla-section">
+                    <div class="tabla-header">
+                        <h3>👥 Lista de Usuarios</h3>
+                    </div>
+
+                    {% if usuarios %}
+                        <table class="usuarios-tabla">
+                            <thead>
+                                <tr>
+                                    <th>Nombre Completo</th>
+                                    <th>Email</th>
+                                    <th>Cédula</th>
+                                    <th>Teléfono</th>
+                                    <th>Rol</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for usuario in usuarios %}
+                                <tr>
+                                    <td><strong>{{ usuario.nombres }} {{ usuario.apellidos }}</strong></td>
+                                    <td>{{ usuario.email }}</td>
+                                    <td>{{ usuario.cedula }}</td>
+                                    <td>{{ usuario.telefono }}</td>
+                                    <td>
+                                        <span class="rol-badge rol-{{ usuario.rol }}">
+                                            {% if usuario.rol == 'admin' %}👤 Admin
+                                            {% elif usuario.rol == 'medico' %}👨‍⚕️ Médico
+                                            {% else %}👤 Usuario{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="acciones-btn">
+                                            <form method="get" action="{% url 'update_user' usuario.id %}">
+                                                <button class="btn-tabla btn-editar" type="submit">✏️ Editar</button>
+                                            </form>
+                                            <button class="btn-tabla btn-cambiar-rol" onclick="abrirModalRol({{ usuario.id }}, '{{ usuario.nombres }}', '{{ usuario.rol }}')">
+                                                🔄 Rol
+                                            </button>
+                                            <form method="post" action="{% url 'delete_user' usuario.id %}">
+                                                {% csrf_token %}
+                                                <button class="btn-tabla btn-eliminar" type="submit" 
+                                                    onclick="return confirm('¿Eliminar a {{ usuario.nombres }} {{ usuario.apellidos }}? Esta acción no se puede deshacer.')">
+                                                    🗑️ Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="sin-usuarios">
+                            <p>📭 No hay usuarios registrados en el sistema</p>
+                            <a href="{% url 'create_user' %}" class="btn-accion btn-usuario" style="width: fit-content; margin: 0 auto;">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Crear primer usuario</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
         </main>
 
+        <!-- Modal para cambiar rol -->
+        <div id="modal-rol" class="modal-cambio-rol">
+            <div class="modal-contenido">
+                <div class="modal-header">
+                    <h2>🔄 Cambiar Rol de Usuario</h2>
+                    <p id="usuario-nombre" style="color: #7f8c8d; margin: 0.5rem 0 0 0; font-size: 0.9rem;"></p>
+                </div>
+                <form id="form-cambio-rol" method="post" action="#">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <label for="nuevo-rol">Nuevo Rol:</label>
+                        <select name="nuevo_rol" id="nuevo-rol" required>
+                            <option value="">Seleccionar rol...</option>
+                            <option value="admin">👤 Administrador</option>
+                            <option value="medico">👨‍⚕️ Médico</option>
+                            <option value="usuario">👤 Usuario</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancelar" onclick="cerrarModalRol()">Cancelar</button>
+                        <button type="submit" class="btn-confirmar">Cambiar Rol</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function abrirModalRol(usuarioId, usuarioNombre, rolActual) {
+                document.getElementById('modal-rol').style.display = 'block';
+                document.getElementById('usuario-nombre').textContent = 'Usuario: ' + usuarioNombre + ' (Rol actual: ' + rolActual + ')';
+                document.getElementById('form-cambio-rol').action = '/change_rol/' + usuarioId + '/';
+            }
+
+            function cerrarModalRol() {
+                document.getElementById('modal-rol').style.display = 'none';
+            }
+
+            function aplicarFiltros() {
+                const rol = document.getElementById('filtro-rol').value;
+                const buscar = document.getElementById('filtro-buscar').value;
+                console.log('Filtrar por rol:', rol, 'Buscar:', buscar);
+                // Aquí irá la lógica de filtrado
+            }
+
+            // Cerrar modal si hace clic fuera
+            window.onclick = function(event) {
+                const modal = document.getElementById('modal-rol');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        </script>
     </body>
 </html>
+    

@@ -1,0 +1,212 @@
+{% load static %}
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="description" content="AlfaHospital Dashboard Médico - Gestión de Pacientes"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta name="author" content="AlfaHospital"/>
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+        <title>AlfaHospital - Dashboard Médico</title>
+    </head>
+    <body>
+        <!-- Header -->
+        <header class="header">
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="{% static 'images/LOGO-COLOR.svg' %}" alt="Alfa Hospital Logo" class="logo-img">
+                </div>
+                <div class="nav-links">
+                    <span style="color: #2c3e50; font-weight: 500;">Dr/Dra. {{ request.session.usuario_nombre }}</span>
+                    <a href="{% url 'logout' %}" class="login-btn">Cerrar Sesión</a>
+                </div>
+            </nav>
+        </header>
+
+        <main class="login-main">
+            <section class="login-container">
+                <!-- Card de bienvenida -->
+                <section class="login-card">
+                    <h1>Dashboard Médico</h1>
+                    <p style="color: #7f8c8d; margin-bottom: 1.5rem;">Gestiona tus citas y pacientes</p>
+                </section>
+
+                <!-- Card con citas del día -->
+                <section class="login-card">
+                    <h2 style="margin-bottom: 1.5rem; color: #2c3e50;">Citas de Hoy</h2>
+                    
+                    {% if citas_hoy %}
+                        <div class="citas-medico-list">
+                            {% for cita in citas_hoy %}
+                            <div class="cita-medico-item">
+                                <div class="cita-medico-header">
+                                    <h3 style="color: #2c3e50;">{{ cita.paciente_nombre }}</h3>
+                                    <span class="cita-hora">{{ cita.hora }}</span>
+                                </div>
+                                
+                                <div class="cita-medico-info">
+                                    <p><strong>Motivo:</strong> {{ cita.motivo_consulta }}</p>
+                                    <p><strong>Consultorio:</strong> {{ cita.consultorio }}</p>
+                                    <p><strong>Teléfono:</strong> {{ cita.paciente_telefono }}</p>
+                                </div>
+
+                                <div class="cita-medico-acciones">
+                                    <button class="btn-completar" type="button">Marcar Completada</button>
+                                    <button class="btn-noasistio" type="button">No asistió</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="sin-citas-medico" style="text-align: center; padding: 2rem; color: #7f8c8d;">
+                            <p style="font-size: 1.1rem;">No tienes citas agendadas para hoy</p>
+                        </div>
+                    {% endif %}
+                </section>
+
+                <!-- Card con historial de citas -->
+                <section class="login-card">
+                    <h2 style="margin-bottom: 1.5rem; color: #2c3e50;">Historial de Citas</h2>
+                    
+                    {% if citas_historial %}
+                        <div class="citas-historial-table">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f0f0f0; border-bottom: 2px solid #e0e0e0;">
+                                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #2c3e50;">Paciente</th>
+                                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #2c3e50;">Fecha</th>
+                                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #2c3e50;">Estado</th>
+                                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #2c3e50;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cita in citas_historial %}
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 1rem; color: #34495e;">{{ cita.paciente_nombre }}</td>
+                                        <td style="padding: 1rem; color: #34495e;">{{ cita.fecha }}</td>
+                                        <td style="padding: 1rem;">
+                                            <span class="badge" style="background: #3498db; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem;">
+                                                {{ cita.estado }}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 1rem;">
+                                            <button class="btn-ver-detalles" type="button" style="background: #3498db; color: white; padding: 0.5rem 1rem; border: none; border-radius: 5px; cursor: pointer;">
+                                                Ver Detalles
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div style="text-align: center; padding: 2rem; color: #7f8c8d;">
+                            <p>No hay historial de citas</p>
+                        </div>
+                    {% endif %}
+                </section>
+            </section>
+        </main>
+
+        <!-- Estilos adicionales para el dashboard médico -->
+        <style>
+            .citas-medico-list {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .cita-medico-item {
+                background: #f8f9fa;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                padding: 1.5rem;
+                transition: all 0.3s ease;
+            }
+
+            .cita-medico-item:hover {
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                border-color: #3498db;
+            }
+
+            .cita-medico-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid #e0e0e0;
+            }
+
+            .cita-medico-header h3 {
+                margin: 0;
+                font-size: 1.2rem;
+            }
+
+            .cita-hora {
+                background: #2ecc71;
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 5px;
+                font-weight: 600;
+                font-size: 1rem;
+            }
+
+            .cita-medico-info {
+                margin-bottom: 1.5rem;
+            }
+
+            .cita-medico-info p {
+                margin: 0.5rem 0;
+                color: #34495e;
+                font-size: 0.95rem;
+            }
+
+            .cita-medico-acciones {
+                display: flex;
+                gap: 0.75rem;
+            }
+
+            .btn-completar,
+            .btn-noasistio {
+                flex: 1;
+                padding: 0.6rem 1rem;
+                border: none;
+                border-radius: 5px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 0.9rem;
+                font-family: 'Poppins', sans-serif;
+            }
+
+            .btn-completar {
+                background: #2ecc71;
+                color: white;
+            }
+
+            .btn-completar:hover {
+                background: #27ae60;
+                transform: translateY(-2px);
+            }
+
+            .btn-noasistio {
+                background: #e74c3c;
+                color: white;
+            }
+
+            .btn-noasistio:hover {
+                background: #c0392b;
+                transform: translateY(-2px);
+            }
+
+            .sin-citas-medico {
+                padding: 2rem 1rem;
+                background: #f8f9fa;
+                border-radius: 10px;
+            }
+        </style>
+
+    </body>
+</html>

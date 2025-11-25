@@ -1,6 +1,10 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password, check_password
 from .models import Usuario
+from citas.models import Medico, Cita, Especialidad, Consultorio, Horario
+from .forms import CreateMedicoForm, CreateConsultorioForm, CreateHorarioForm, CreateEspecialidadForm
 
 # Create your views here.
 '''
@@ -30,14 +34,36 @@ def login_required(view_func):
     wrapper.__doc__ = view_func.__doc__
     return wrapper
 
+# DECORADOR PARA VALIDAR ROLES
+def rol_required(rol_requerido):
+    """
+    Decorador que verifica si el usuario tiene el rol necesario.
+    """
+    def decorator(view_func):
+        def wrapper(request, *args, **kwargs):
+            # Primero verifica si está logueado
+            if 'usuario_id' not in request.session:
+                messages.warning(request, 'Debes iniciar sesión')
+                return redirect('login')
+            
+            # Obtener el usuario y su rol
+            usuario = Usuario.objects.get(id=request.session['usuario_id'])
+            
+            # Verificar si tiene el rol correcto
+            if usuario.rol != rol_requerido:
+                messages.error(request, f'No tienes permisos. Se requiere rol: {rol_requerido}')
+                return redirect('index')
+            
+            return view_func(request, *args, **kwargs)
+        
+        wrapper.__name__ = view_func.__name__
+        wrapper.__doc__ = view_func.__doc__
+        return wrapper
+    return decorator
+
 # Redirect functions for nav ----------------------------
 def index(request):
     return render(request, 'index.html')
-
-@login_required
-def home(request):
-    return render(request, 'home.html')
-
 # Create user -------------------------------------------
 def create_user(request):
     if request.method == 'POST':
@@ -50,7 +76,7 @@ def create_user(request):
         fecha_nacimiento = request.POST.get('fecha_nacimiento')
         genero = request.POST.get('genero')
         password = request.POST.get('password')
-
+        password_hash = make_password(password) #Hash
         try:
             # Crear y guardar el usuario
             usuario = Usuario(
@@ -61,11 +87,23 @@ def create_user(request):
                 email=email,
                 fecha_nacimiento=fecha_nacimiento,
                 genero=genero,
-                password=password  # TODO: Encriptar contraseña
+                password = password_hash
             )
+            usuario.full_clean()  # Ejecuta las validaciones del modelo
             usuario.save()
             messages.success(request, 'Usuario creado exitosamente!')
+            
+            # Si el que crea es admin, volver al panel de control
+            if request.session.get('usuario_rol') == 'admin':
+                return redirect('control_users')
+                
             return redirect('login')
+        
+        except ValidationError as e:
+            # e.message_dict es un diccionario con los errores por campo
+            for campo, errores in e.message_dict.items():
+                for error in errores:
+                    messages.error(request, f'{campo}: {error}')
         
         except Exception as e:
             messages.error(request, f'Error al crear usuario: {str(e)}')
@@ -83,13 +121,20 @@ def login_view(request):
             # Buscar usuario en BD
             usuario = Usuario.objects.get(email=email)
 
-            # Verificar contraseñá por ahora sin encriptar TODO: Encriptar
-            if usuario.password == password:
+            if check_password(password, usuario.password): #Seguro hash
                 # Login exitoso -> crear sesion
                 request.session['usuario_id'] = usuario.id
                 request.session['usuario_nombre']=usuario.nombres
+                request.session['usuario_rol'] = usuario.rol 
                 messages.success(request, f'Bienvenido {usuario.nombres}')
-                return redirect('home')
+                
+                # Redirigir según el rol del usuario
+                if usuario.rol == 'admin':
+                    return redirect('control_users')
+                elif usuario.rol == 'medico':
+                    return redirect('dashboard_medico')
+                else:  # usuario normal
+                    return redirect('dashboard_usuario')
             else:
                 messages.error(request, 'Contraseña incorrecta')
 
@@ -111,17 +156,243 @@ def logout_view(request):
     messages.success(request, 'Has cerrado sesión correctamente')
     return redirect('index')
 
-# Ver usuarios de DB
-@login_required
+@rol_required('admin')
 def control_users(request):
-    # Obtener TODOS los usuarios de la DB
     usuarios = Usuario.objects.all()
-
-    # Enviar los usuarios al template
+    medicos = Medico.objects.select_related('usuario', 'especialidad', 'consultorio')
+    citas = Cita.objects.select_related('medico', 'paciente', 'especialidad')
+    
+    # Estadísticas de usuarios
+    total_usuarios = usuarios.count()
+    total_admins = usuarios.filter(rol='admin').count()
+    total_medicos_usuarios = usuarios.filter(rol='medico').count()
+    total_usuarios_normales = usuarios.filter(rol='usuario').count()
+    
+    # Estadísticas de médicos
+    total_medicos_internos = medicos.filter(tipo='interno').count()
+    total_medicos_externos = medicos.filter(tipo='externo').count()
+    total_medicos_activos = medicos.count()
+    
+    # Estadísticas de consultorios
+    total_consultorios_internos = Consultorio.objects.filter(tipo='interno').count()
+    total_consultorios_externos = Consultorio.objects.filter(tipo='externo').count()
+    
+    # Estadísticas de citas
+    total_citas = citas.count()
+    
+    # Especialidades
+    especialidades = Especialidad.objects.all().count()
+    
     context = {
-        'usuarios': usuarios
+        'usuarios': usuarios,
+        'medicos': medicos,
+        'citas': citas,
+        
+        # Stats usuarios
+        'total_usuarios': total_usuarios,
+        'total_admins': total_admins,
+        'total_medicos_usuarios': total_medicos_usuarios,
+        'total_usuarios_normales': total_usuarios_normales,
+        
+        # Stats médicos
+        'total_medicos_internos': total_medicos_internos,
+        'total_medicos_externos': total_medicos_externos,
+        'total_medicos_activos': total_medicos_activos,
+        
+        # Stats consultorios
+        'total_consultorios_internos': total_consultorios_internos,
+        'total_consultorios_externos': total_consultorios_externos,
+        
+        # Stats citas
+        'total_citas': total_citas,
+        
+        # Stats especialidades
+        'total_especialidades': especialidades,
     }
     return render(request, 'control_users.html', context)
+
+@rol_required('admin')
+def change_rol(request, user_id):
+    if request.method == 'POST':
+        nuevo_rol = request.POST.get('nuevo_rol')
+        try:
+            usuario = Usuario.objects.get(id=user_id)
+            rol_anterior = usuario.rol
+            usuario.rol = nuevo_rol
+            usuario.save()
+            messages.success(request, f'Rol de {usuario.nombres} cambió de {rol_anterior} a {nuevo_rol}')
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Usuario no encontrado')
+    
+    return redirect('control_users')
+
+# Dashboard para usuarios normales
+@rol_required('usuario')
+def dashboard_usuario(request):
+    # Aquí irán las citas del usuario desde el modelo que crearemos
+    # Por ahora pasamos una lista vacía TODO: corregir
+    context = {
+        'citas': []  # Se llenará cuando tengamos el modelo de Citas
+    }
+    return render(request, 'dashboard_usuario.html', context)
+
+
+# Dashboard para médicos
+@rol_required('medico')
+def dashboard_medico(request):
+    # Aquí irán las citas del médico TODO: relacionar con citas de usuarios
+    context = {
+        'citas_hoy': [],       # Se llenará cuando tengamos el modelo de Citas
+        'citas_historial': []  # Se llenará cuando tengamos el modelo de Citas
+    }
+    return render(request, 'dashboard_medico.html', context)
+
+# ===== CREAR MÉDICO =====
+@rol_required('admin')
+def create_medico(request):
+    """Crear un nuevo médico (usuario con rol médico)"""
+    if request.method == 'POST':
+        form = CreateMedicoForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                # Crear usuario
+                password_hash = make_password(form.cleaned_data['password'])
+                usuario = Usuario(
+                    nombres=form.cleaned_data['nombres'],
+                    apellidos=form.cleaned_data['apellidos'],
+                    cedula=form.cleaned_data['cedula'],
+                    telefono=form.cleaned_data['telefono'],
+                    email=form.cleaned_data['email'],
+                    fecha_nacimiento=form.cleaned_data['fecha_nacimiento'],
+                    genero=form.cleaned_data['genero'],
+                    password=password_hash,
+                    rol='medico'
+                )
+                usuario.full_clean()
+                usuario.save()
+                
+                # Crear médico asociado
+                medico = Medico(
+                    usuario=usuario,
+                    especialidad=form.cleaned_data['especialidad'],
+                    tipo=form.cleaned_data['tipo'],
+                    consultorio=form.cleaned_data.get('consultorio')
+                )
+                medico.full_clean()
+                medico.save()
+                
+                messages.success(request, f'Médico {usuario.nombres} {usuario.apellidos} creado exitosamente!')
+                # Mantener sesión del admin - redirigir a control_users sin cerrar sesión
+                return redirect('control_users')
+            
+            except ValidationError as e:
+                for campo, errores in e.message_dict.items():
+                    for error in errores:
+                        messages.error(request, f'{campo}: {error}')
+            except Exception as e:
+                messages.error(request, f'Error al crear médico: {str(e)}')
+    else:
+        form = CreateMedicoForm()
+    
+    context = {'form': form}
+    return render(request, 'create_medico.html', context)
+
+# ===== CREAR CONSULTORIO =====
+@rol_required('admin')
+def create_consultorio(request):
+    """Crear un nuevo consultorio"""
+    if request.method == 'POST':
+        form = CreateConsultorioForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                consultorio = form.save()
+                messages.success(request, f'Consultorio {consultorio.numero} creado exitosamente!')
+                return redirect('control_users')
+            
+            except ValidationError as e:
+                for campo, errores in e.message_dict.items():
+                    for error in errores:
+                        messages.error(request, f'{campo}: {error}')
+            except Exception as e:
+                messages.error(request, f'Error al crear consultorio: {str(e)}')
+    else:
+        form = CreateConsultorioForm()
+    
+    context = {'form': form}
+    return render(request, 'create_consultorio.html', context)
+
+# ===== CREAR HORARIO =====
+@rol_required('admin')
+def create_horario(request):
+    """Crear un nuevo horario para un médico"""
+    if request.method == 'POST':
+        form = CreateHorarioForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                horario = form.save()
+                messages.success(request, f'Horario creado exitosamente!')
+                return redirect('control_users')
+            
+            except ValidationError as e:
+                for campo, errores in e.message_dict.items():
+                    for error in errores:
+                        messages.error(request, f'{campo}: {error}')
+            except Exception as e:
+                messages.error(request, f'Error al crear horario: {str(e)}')
+    else:
+        form = CreateHorarioForm()
+    
+    context = {'form': form}
+    return render(request, 'create_horario.html', context)
+
+# ===== CREAR ESPECIALIDAD =====
+@rol_required('admin')
+def create_especialidad(request):
+    """Crear una nueva especialidad"""
+    if request.method == 'POST':
+        form = CreateEspecialidadForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                especialidad = form.save()
+                messages.success(request, f'Especialidad {especialidad.nombre} creada exitosamente!')
+                return redirect('control_users')
+            
+            except ValidationError as e:
+                for campo, errores in e.message_dict.items():
+                    for error in errores:
+                        messages.error(request, f'{campo}: {error}')
+            except Exception as e:
+                messages.error(request, f'Error al crear especialidad: {str(e)}')
+    else:
+        form = CreateEspecialidadForm()
+    
+    context = {'form': form}
+    return render(request, 'create_especialidad.html', context)
+
+# ===== LISTAR HORARIOS =====
+@rol_required('admin')
+def list_horarios(request):
+    """Listar horarios con filtro por médico"""
+    medicos = Medico.objects.select_related('usuario').order_by('usuario__nombres')
+    
+    medico_id = request.GET.get('medico_id')
+    if medico_id:
+        horarios = Horario.objects.filter(medico_id=medico_id).select_related('medico', 'medico__usuario').order_by('dia_semana', 'hora_inicio')
+    else:
+        # Si no hay selección, no mostramos horarios (o podríamos mostrar todos)
+        # Según requerimiento: "solo el seleccionado cargue sus horarios"
+        horarios = None
+    
+    context = {
+        'medicos': medicos,
+        'horarios': horarios,
+        'medico_seleccionado': int(medico_id) if medico_id else None
+    }
+    return render(request, 'list_horarios.html', context)
 
 # Delete specific user from DB
 @login_required
@@ -198,8 +469,9 @@ def update_user(request, user_id):
             if genero:
                 usuario.genero = genero
             if password:
-                usuario.password = password
+                usuario.password = make_password(password) #hash
 
+            usuario.full_clean()  # Ejecuta las validaciones del modelo
             usuario.save()
 
             messages.success(request, f"Usuario {usuario.nombres} {usuario.apellidos} actualizado exitosamente")
