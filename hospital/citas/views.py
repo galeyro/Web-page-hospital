@@ -1,5 +1,10 @@
 from django.shortcuts import render
 from datetime import datetime, timedelta
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from datetime import datetime
+from .forms import CitaCreateForm
+from .models import Cita, Horario, Medico, Especialidad, Consultorio
 # Create your views here.
 
 # Hace la suma de los minutos por los bloques
@@ -14,3 +19,65 @@ def hay_conflicto(inicio, fin, citas):
             return True
     return False
 
+def crear_cita(request):
+    if request.method == "POST":
+        form = CitaCreateForm(request.POST) # Si se realiza un crear con POST, pasaría este flujo
+
+        if form.is_valid():
+            fecha = form.cleaned_data["fecha"]
+            especialidad = form.cleaned_data["especialidad"]
+            duracion = especialidad.duracion_cita # Segun la especialidad escogida por usuario se establece la duración
+
+            dia_semana = fecha.weekday() 
+
+            medicos = Medico.objects.filter(especialidad=especialidad) # Filtra medicos segun la especialidad escogida y los selecciona
+
+            for medico in medicos:
+                # Verificamos el horario de los medicos
+                horarios = Horario.objects.filter(
+                    medico=medico,
+                    dia_semana=dia_semana
+                )
+                
+                # Si no tienen horario ese día, pasamos
+                if not horarios.exists():
+                    continue
+                
+                # Verificamos las citas existentes por medio en cierta fecha
+                citas_existentes = Cita.objects.filter(
+                    medico=medico,
+                    fecha=fecha
+                ).order_by("hora_inicio")
+
+                for horario in horarios:
+                    # Establecemos la hora actual como la hora de inicio de los médicos
+                    hora_actual = horario.hora_inicio
+
+                    # Hacemos el bucle para hacer las verificaciones de horario
+                    while sumar_minutos(hora_actual, duracion) <= horario.hora_fin:
+                        hora_fin = sumar_minutos(hora_actual, duracion)
+
+                        # Si no existe sobrelapamiento de citas pasamos la recomenacion de citas a la vista adecuada 
+                        if not hay_conflicto(hora_actual, hora_fin, citas_existentes):
+                            # Mostrar recomendación
+                            return render(request, "confirmar_cita.html", {
+                                "fecha": fecha,
+                                "hora_inicio": hora_actual,
+                                "hora_fin": hora_fin,
+                                "especialidad": especialidad,
+                                "medico": medico,
+                                "consultorio": medico.consultorio,
+                            })
+
+                        # Si hay conflictos, ponemos la hora fin calculada como la nueva hora de inicio y seguimos
+                        hora_actual = hora_fin
+
+            # Si no hay médico o disponibilidad mismo, mandamos error
+            messages.error(request, "No hay disponibilidad para esa fecha.")
+            return redirect("crear_cita") # Redirige a esta misma vista
+
+    # Si el metodo es GET, solo creamos el formulario y lo pasamos como argumento a la vista
+    else:
+        form = CitaCreateForm()
+
+    return render(request, "crear_cita.html", {"form": form})
