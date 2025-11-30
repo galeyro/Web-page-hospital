@@ -208,6 +208,7 @@ def control_users(request):
         
         # Stats especialidades
         'total_especialidades': especialidades,
+        
     }
     return render(request, 'control_users.html', context)
 
