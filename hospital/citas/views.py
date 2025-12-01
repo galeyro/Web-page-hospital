@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from datetime import datetime
+from django.utils import timezone
 from .forms import CitaCreateForm
 from .models import Cita, Horario, Medico, Especialidad, Consultorio
 from login.models import Usuario
@@ -154,6 +155,14 @@ def crear_cita(request):
                     # Establecemos la hora actual como la hora de inicio de los médicos
                     hora_actual = horario.hora_inicio
 
+                    # Si la cita es para HOY, saltar horas pasadas, para evitar asignaciones ilógicas
+                    if fecha == timezone.localdate(): # fecha actual según la zona horaria
+                        hora_real = timezone.localtime().time() # hora real actual según la zona horaria
+                        if hora_actual < hora_real:
+                            # Establecemos la hora actual en un slot válido (15 - 30 min) para hacer la asignación
+                            while hora_actual < hora_real and sumar_minutos(hora_actual, duracion) <= horario.hora_fin:
+                                hora_actual = sumar_minutos(hora_actual, duracion)
+    
                     # Hacemos el bucle para hacer las verificaciones de horario
                     while sumar_minutos(hora_actual, duracion) <= horario.hora_fin:
                         hora_fin = sumar_minutos(hora_actual, duracion)
@@ -168,6 +177,7 @@ def crear_cita(request):
                                     continue
                             else:
                                 consultorio = medico.consultorio # Si no es externo no necesita la asignación de consultorio
+                                
                             # Mostrar recomendación
                             return render(request, "citas/confirmar_cita.html", {
                                 "fecha": fecha,
@@ -175,7 +185,7 @@ def crear_cita(request):
                                 "hora_fin": hora_fin,
                                 "especialidad": especialidad,
                                 "medico": medico,
-                                "consultorio": medico.consultorio,
+                                "consultorio": consultorio,
                             })
 
                         # Si hay conflictos, ponemos la hora fin calculada como la nueva hora de inicio y seguimos
