@@ -7,7 +7,7 @@ from django.utils import timezone
 from .forms import CitaCreateForm
 from .models import Cita, Horario, Medico, Especialidad, Consultorio
 from login.models import Usuario
-from .decorators import login_required, rol_required
+from login.decorators import login_required, rol_required
 
 def normalizar_fecha_hora(fecha_str, hora_ini_str, hora_fin_str):
     # --- Fecha ---
