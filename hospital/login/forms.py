@@ -1,4 +1,4 @@
-  from django import forms
+from django import forms
 from django.core.exceptions import ValidationError
 from .models import Usuario, validar_cedula_ecuador, validar_telefono, validar_edad
 from citas.models import Medico, Consultorio, Horario, Especialidad
