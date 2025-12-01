@@ -233,8 +233,11 @@ def change_rol(request, user_id):
 @rol_required('usuario')
 def dashboard_usuario(request):
     # Aquí irán las citas del usuario desde el modelo que crearemos
-    # Pasamos la lista completa de citas, TODO: modificar para que sean solo del usuario autenticado
-    citas = Cita.objects.all()
+    # Se obtiene el paciente (usuario) que esta iniciado la sesion
+    paciente = Usuario.objects.get(id=request.session["usuario_id"])
+    citas = Cita.objects.filter(
+        paciente = paciente # Se filtra por ese usuario
+    )
 
     context = {
         'citas': citas  # Se llenará cuando tengamos el modelo de Citas
@@ -245,8 +248,8 @@ def dashboard_usuario(request):
 # Dashboard para médicos
 @rol_required('medico')
 def dashboard_medico(request):
-    # Aquí irán las citas del médico TODO: relacionar con citas de usuarios
-    usuario = Usuario.objects.get(id=request.session["usuario_id"]) # Obtenemos primero el usuario asignado a la sesion
+    # Completamente relacionadas las citas con los medicos
+    usuario = Usuario.objects.get(id=request.session["usuario_id"]) # Obtenemos primero el usuario asignado a la sesion (medico inicio sesión)
 
     # Obtener la instancia de Medico asociada
     try:
