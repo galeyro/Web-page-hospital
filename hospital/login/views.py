@@ -6,62 +6,7 @@ from django.utils import timezone
 from .models import Usuario
 from citas.models import Medico, Cita, Especialidad, Consultorio, Horario
 from .forms import CreateMedicoForm, CreateConsultorioForm, CreateHorarioForm, CreateEspecialidadForm
-
-
-# Create your views here.
-'''
-# MVC = Model View Controller
-# MVT = Model Template View
-
-Aqui a la vista se le llama template y el controllador se llama View
-'''
-
-# DECORADOR PARA PROTEGER VISTAS
-def login_required(view_func):
-    """
-    Decorador que verifica si el usuario está logueado.
-    Si no está logueado, redirige al login.
-    """
-    def wrapper(request, *args, **kwargs):
-        # Verificar si existe una sesión activa
-        if 'usuario_id' not in request.session:
-            messages.warning(request, 'Debes iniciar sesión para acceder a esta página')
-            return redirect('login')
-        
-        # Si está logueado, ejecutar la vista normalmente
-        return view_func(request, *args, **kwargs)
-    
-    # Mantener el nombre y documentación de la función original
-    wrapper.__name__ = view_func.__name__
-    wrapper.__doc__ = view_func.__doc__
-    return wrapper
-
-# DECORADOR PARA VALIDAR ROLES
-def rol_required(rol_requerido):
-    """
-    Decorador que verifica si el usuario tiene el rol necesario.
-    """
-    def decorator(view_func):
-        def wrapper(request, *args, **kwargs):
-            # Primero verifica si está logueado
-            if 'usuario_id' not in request.session:
-                messages.warning(request, 'Debes iniciar sesión')
-                return redirect('login')
-            
-            # Obtener el usuario y su rol
-            usuario = Usuario.objects.get(id=request.session['usuario_id'])
-            
-            # Verificar si tiene el rol correcto
-            if usuario.rol != rol_requerido:
-                messages.error(request, f'No tienes permisos. Se requiere rol: {rol_requerido}')
-                return redirect('index')
-            
-            return view_func(request, *args, **kwargs)
-        
-        wrapper.__name__ = view_func.__name__
-        wrapper.__doc__ = view_func.__doc__
-        return wrapper
-    return decorator
+from .decorators import login_required, rol_required
 
 # Redirect functions for nav ----------------------------
 def index(request):

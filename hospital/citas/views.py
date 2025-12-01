@@ -7,55 +7,8 @@ from django.utils import timezone
 from .forms import CitaCreateForm
 from .models import Cita, Horario, Medico, Especialidad, Consultorio
 from login.models import Usuario
-# Create your views here.
+from .decorators import login_required, rol_required
 
-def login_required(view_func):
-    """
-    Decorador que verifica si el usuario está logueado.
-    Si no está logueado, redirige al login.
-    """
-    def wrapper(request, *args, **kwargs):
-        # Verificar si existe una sesión activa
-        if 'usuario_id' not in request.session:
-            messages.warning(request, 'Debes iniciar sesión para acceder a esta página')
-            return redirect('login')
-        
-        # Si está logueado, ejecutar la vista normalmente
-        return view_func(request, *args, **kwargs)
-    
-    # Mantener el nombre y documentación de la función original
-    wrapper.__name__ = view_func.__name__
-    wrapper.__doc__ = view_func.__doc__
-    return wrapper
-
-def rol_required(rol_requerido):
-    """
-    Decorador que verifica si el usuario tiene el rol necesario.
-    """
-    def decorator(view_func):
-        def wrapper(request, *args, **kwargs):
-            # Primero verifica si está logueado
-            if 'usuario_id' not in request.session:
-                messages.warning(request, 'Debes iniciar sesión')
-                return redirect('login')
-            
-            # Obtener el usuario y su rol
-            usuario = Usuario.objects.get(id=request.session['usuario_id'])
-            
-            # Verificar si tiene el rol correcto
-            if usuario.rol != rol_requerido:
-                messages.error(request, f'No tienes permisos. Se requiere rol: {rol_requerido}')
-                return redirect('index')
-            
-            return view_func(request, *args, **kwargs)
-        
-        wrapper.__name__ = view_func.__name__
-        wrapper.__doc__ = view_func.__doc__
-        return wrapper
-    return decorator
-
-# Función para normalizar fechas y horas
-# TODO: mandar algunas funciones utilitarias como el login_required decorator creado y rol_required creado, a una carpeta utilitaria
 def normalizar_fecha_hora(fecha_str, hora_ini_str, hora_fin_str):
     # --- Fecha ---
     # Limpia puntos en meses tipo "Dec." -> "Dec"
@@ -119,7 +72,7 @@ def consultorio_externo_disponible(fecha, inicio, fin):
     return None
 
 
-@login_required
+@login_required 
 @rol_required('usuario')
 def crear_cita(request):
     if request.method == "POST":
