@@ -39,8 +39,8 @@
         <p><strong>Especialidad:</strong> {{ especialidad.nombre }}</p>
         <p><strong>Médico asignado:</strong> {{ medico.usuario.nombres }} {{ medico.usuario.apellidos }}</p>
         <p><strong>Fecha:</strong> {{ fecha }}</p>
-        <p><strong>Hora de inicio:</strong> {{ hora_inicio }}</p>
-        <p><strong>Hora de fin:</strong> {{ hora_fin }}</p>
+        <p><strong>Hora de inicio:</strong> {{ hora_inicio|date:'h:i a' }}</p>
+        <p><strong>Hora de fin:</strong> {{ hora_fin|date:'h:i a' }}</p>
         <p><strong>Consultorio:</strong> {{ consultorio }}</p>
       </div>
 
