@@ -44,7 +44,7 @@
 
             <div class="summary-box">
                 <p><strong>Especialidad:</strong> {{ especialidad.nombre }}</p>
-                <p><strong>Médico asignado:</strong> {{ doctor.usuario.nombres }} {{ doctor.usuario.apellidos }}</p>
+                <p><strong>Médico asignado:</strong> {{ medico.usuario.nombres }} {{ medico.usuario.apellidos }}</p>
                 <p><strong>Fecha:</strong> {{ fecha }}</p>
                 <p><strong>Hora de inicio:</strong> {{ hora_inicio }}</p>
                 <p><strong>Hora de fin:</strong> {{ hora_fin }}</p>
@@ -61,7 +61,6 @@
 
             <form method="post" class="login-form">
                 {% csrf_token %}
-
                 <!-- Campos ocultos para enviar datos finales -->
                 <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
                 <input type="hidden" name="especialidad_id" value="{{ especialidad.id }}">
@@ -71,7 +70,7 @@
                 <input type="hidden" name="consultorio_id" value="{{ consultorio.id }}">
 
                 <button type="submit" class="login-btn">Confirmar Cita</button>
-                <a href="{% url 'crear_cita' %}" class="login-btn btn-secondary" style="text-align: center; text-decoration: none; display: block;">Cancelar</a>
+                <a href="{% url 'create_cita' %}" class="login-btn btn-secondary" style="text-align: center; text-decoration: none; display: block;">Cancelar</a>
             </form>
         </div>
     </div>
