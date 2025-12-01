@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from datetime import datetime
 from .forms import CitaCreateForm
-from .models import Cita, Horario, Medico, Especialidad
+from .models import Cita, Horario, Medico, Especialidad, Consultorio
 from login.models import Usuario
 # Create your views here.
 
@@ -84,9 +84,39 @@ def sumar_minutos(hora, minutos):
 # Permite verificar que no existan 2 citas al misma hora sobrelapadas
 def hay_conflicto(inicio, fin, citas):
     for c in citas:
+        # Fin <= c.hora_inicio es la verificacion para que 
         if not (fin <= c.hora_inicio or inicio >= c.hora_fin):
             return True
     return False
+
+# Sirve para verificar que consultorios están disponibles de los médicos externos
+def consultorio_externo_disponible(fecha, inicio, fin):
+    # Obtiene una sola vez todos los consultorios externos
+    consultorios_externos = Consultorio.objects.filter(tipo='externo')
+
+    # Filtrar solo 1 vez todas las citas de ese día en consultorios externos
+    citas_del_dia = Cita.objects.filter(
+        consultorio__in=consultorios_externos,
+        fecha=fecha
+    ).select_related("consultorio") # trae el consultorio y la cita juntos
+
+    # Convertir citas por consultorio en un diccionario para acceso rápido
+    # Se accede más facilmente a las citas agendadas a cierto consultorio
+    citas_por_consultorio = {}
+    for c in citas_del_dia:
+        citas_por_consultorio.setdefault(c.consultorio_id, []).append(c) # si la clave no existe, crea la lista vacía, sino agrega la cita
+
+    # Verificar disponibilidad por consultorio
+    for consultorio in consultorios_externos:
+        # obtenemos las citas del consultorio
+        citas = citas_por_consultorio.get(consultorio.id, [])
+
+        # Reutilizamos tu función hay_conflicto() para verificar que está disponible
+        if not hay_conflicto(inicio, fin, citas):
+            return consultorio
+
+    return None
+
 
 @login_required
 @rol_required('usuario')
@@ -127,9 +157,17 @@ def crear_cita(request):
                     # Hacemos el bucle para hacer las verificaciones de horario
                     while sumar_minutos(hora_actual, duracion) <= horario.hora_fin:
                         hora_fin = sumar_minutos(hora_actual, duracion)
-
-                        # Si no existe sobrelapamiento de citas pasamos la recomenacion de citas a la vista adecuada 
+                        # Si no existe sobrelapamiento de citas por médico pasamos la recomenacion de citas a la vista adecuada
                         if not hay_conflicto(hora_actual, hora_fin, citas_existentes):
+                            # Si el médico es externo → asignar consultorio externo disponible
+                            # Hacemos doble verificacion de hay conflicto para evitar asignar 2 medicos externos al mismo consultorio en la misma hora
+                            if medico.tipo == "externo":
+                                consultorio = consultorio_externo_disponible(fecha, hora_actual, hora_fin)
+                                if consultorio is None: # Si no encontramos consultorio disponible pasamos al siguiente horario y buscamos de nuevo
+                                    hora_actual = hora_fin
+                                    continue
+                            else:
+                                consultorio = medico.consultorio # Si no es externo no necesita la asignación de consultorio
                             # Mostrar recomendación
                             return render(request, "citas/confirmar_cita.html", {
                                 "fecha": fecha,
