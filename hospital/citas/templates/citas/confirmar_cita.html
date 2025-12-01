@@ -58,8 +58,8 @@
         <input type="hidden" name="medico_id" value="{{ medico.id }}">
         <input type="hidden" name="especialidad_id" value="{{ especialidad.id }}">
         <input type="hidden" name="fecha" value="{{ fecha }}">
-        <input type="hidden" name="hora_inicio" value="{{ hora_inicio }}">
-        <input type="hidden" name="hora_fin" value="{{ hora_fin }}">
+        <input type="hidden" name="hora_inicio" value="{{ hora_inicio|date:'h:i a' }}">
+        <input type="hidden" name="hora_fin" value="{{ hora_fin|date:'h:i a' }}">
         <!-- si quieres enviar consultorio: -->
         {% if consultorio and consultorio.id %}
           <input type="hidden" name="consultorio_id" value="{{ consultorio.id }}">
