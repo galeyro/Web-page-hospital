@@ -2,9 +2,11 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password, check_password
+from django.utils import timezone
 from .models import Usuario
 from citas.models import Medico, Cita, Especialidad, Consultorio, Horario
 from .forms import CreateMedicoForm, CreateConsultorioForm, CreateHorarioForm, CreateEspecialidadForm
+
 
 # Create your views here.
 '''
@@ -231,7 +233,7 @@ def change_rol(request, user_id):
 @rol_required('usuario')
 def dashboard_usuario(request):
     # Aquí irán las citas del usuario desde el modelo que crearemos
-    # Por ahora pasamos una lista vacía TODO: corregir
+    # Pasamos la lista completa de citas, TODO: modificar para que sean solo del usuario autenticado
     citas = Cita.objects.all()
 
     context = {
@@ -244,9 +246,30 @@ def dashboard_usuario(request):
 @rol_required('medico')
 def dashboard_medico(request):
     # Aquí irán las citas del médico TODO: relacionar con citas de usuarios
+    usuario = Usuario.objects.get(id=request.session["usuario_id"]) # Obtenemos primero el usuario asignado a la sesion
+
+    # Obtener la instancia de Medico asociada
+    try:
+        medico = usuario.medico # Verificamos que sea medico, este registrado como medico
+    except Medico.DoesNotExist:
+        return HttpResponse("Este usuario no está registrado como médico.")
+    
+    hoy = timezone.localdate()
+    
+    # Citas del medico que tiene hoy
+    citas_hoy = Cita.objects.filter(
+        medico = medico,
+        fecha = hoy
+    ).order_by('hora_inicio')
+    
+    # Citas del medico en total, de forma historica
+    citas_historial = Cita.objects.filter(
+        medico=medico
+    ).order_by('-fecha', '-hora_inicio')
+    
     context = {
-        'citas_hoy': [],       # Se llenará cuando tengamos el modelo de Citas
-        'citas_historial': []  # Se llenará cuando tengamos el modelo de Citas
+        'citas_hoy': citas_hoy,       # Se llenará cuando tengamos el modelo de Citas
+        'citas_historial': citas_historial  # Se llenará cuando tengamos el modelo de Citas
     }
     return render(request, 'dashboard_medico.html', context)
 

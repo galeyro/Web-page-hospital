@@ -46,9 +46,9 @@
                                 </div>
                                 
                                 <div class="cita-medico-info">
-                                    <p><strong>Motivo:</strong> {{ cita.motivo_consulta }}</p>
+                                    <p><strong>Motivo:</strong> {{ cita.especialidad }}</p>
                                     <p><strong>Consultorio:</strong> {{ cita.consultorio }}</p>
-                                    <p><strong>Teléfono:</strong> {{ cita.paciente_telefono }}</p>
+                                    <p><strong>Teléfono:</strong> {{ cita.paciente.obtener_telefono }}</p>
                                 </div>
 
                                 <div class="cita-medico-acciones">
@@ -83,7 +83,7 @@
                                 <tbody>
                                     {% for cita in citas_historial %}
                                     <tr style="border-bottom: 1px solid #e0e0e0;">
-                                        <td style="padding: 1rem; color: #34495e;">{{ cita.paciente_nombre }}</td>
+                                        <td style="padding: 1rem; color: #34495e;">{{ cita.paciente }}</td>
                                         <td style="padding: 1rem; color: #34495e;">{{ cita.fecha }}</td>
                                         <td style="padding: 1rem;">
                                             <span class="badge" style="background: #3498db; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem;">
