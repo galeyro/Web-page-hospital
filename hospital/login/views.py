@@ -232,8 +232,10 @@ def change_rol(request, user_id):
 def dashboard_usuario(request):
     # Aquí irán las citas del usuario desde el modelo que crearemos
     # Por ahora pasamos una lista vacía TODO: corregir
+    citas = Cita.objects.all()
+
     context = {
-        'citas': []  # Se llenará cuando tengamos el modelo de Citas
+        'citas': citas  # Se llenará cuando tengamos el modelo de Citas
     }
     return render(request, 'dashboard_usuario.html', context)
 

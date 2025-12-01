@@ -60,6 +60,9 @@ class Medico(models.Model):
 
     class Meta:
         ordering = ['usuario__nombres']
+        
+    def nombre_completo(self):
+        return f"Dr. {self.usuario.nombres} {self.usuario.apellidos}"
 
     def clean(self):
         # Validación: si es interno DEBE tener consultorio
