@@ -146,7 +146,7 @@ def crear_cita(request):
 
             # Si no hay médico o disponibilidad mismo, mandamos error
             messages.error(request, "No hay disponibilidad para esa fecha.")
-            return redirect("crear_cita") # Redirige a esta misma vista
+            return redirect("create_cita") # Redirige a esta misma vista
 
     # Si el metodo es GET, solo creamos el formulario y lo pasamos como argumento a la vista
     else:
