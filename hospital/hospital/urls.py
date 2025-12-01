@@ -19,6 +19,7 @@ from django.urls import path
 
 # Impotar app con mis vistas
 from login import views
+from citas.views import crear_cita, confirmar_cita
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -39,4 +40,5 @@ urlpatterns = [
     path('create_horario/', views.create_horario, name='create_horario'),
     path('create_especialidad/', views.create_especialidad, name='create_especialidad'),
     path('list_horarios/', views.list_horarios, name='list_horarios'),
+    path('create_cita/', crear_cita, name='create_cita')
 ]

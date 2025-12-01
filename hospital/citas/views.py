@@ -60,7 +60,7 @@ def crear_cita(request):
                         # Si no existe sobrelapamiento de citas pasamos la recomenacion de citas a la vista adecuada 
                         if not hay_conflicto(hora_actual, hora_fin, citas_existentes):
                             # Mostrar recomendación
-                            return render(request, "confirmar_cita.html", {
+                            return render(request, "citas/confirmar_cita.html", {
                                 "fecha": fecha,
                                 "hora_inicio": hora_actual,
                                 "hora_fin": hora_fin,
@@ -80,4 +80,34 @@ def crear_cita(request):
     else:
         form = CitaCreateForm()
 
-    return render(request, "crear_cita.html", {"form": form})
+    return render(request, "citas/create_cita.html", {"form": form})
+
+def confirmar_cita(request):
+    # Si el usuario hace click a Aceptar, establecemos los datos para crear la cita en la Base de Datos
+    if request.method == "POST":
+        fecha = request.POST["fecha"]
+        medico_id = request.POST["medico_id"]
+        especialidad_id = request.POST["especialidad_id"]
+        hora_inicio = request.POST["hora_inicio"]
+        hora_fin = request.POST["hora_fin"]
+
+        medico = Medico.objects.get(id=medico_id)
+        especialidad = Especialidad.objects.get(id=especialidad_id)
+
+        # Crear cita con esos campos
+        cita = Cita.objects.create(
+            paciente=request.user,    # paciente autenticado, usuario creado en el sistema
+            medico=medico,
+            consultorio=medico.consultorio,
+            especialidad=especialidad,
+            fecha=fecha,
+            hora_inicio=hora_inicio,
+            hora_fin=hora_fin,
+        )
+
+        # Si todo sale bien, mandamos mensaje de cita reservada correctamente
+        messages.success(request, "Cita reservada correctamente.")
+        # redirigimos al dashboard_usuario para mostrar las citas agendadas
+        return redirect("dashboard_usuario")
+
+    return redirect("crear_cita")
