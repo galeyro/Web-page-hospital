@@ -152,6 +152,15 @@
                 box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
             }
 
+            .btn-ver-horarios {
+                background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            }
+
+            .btn-ver-horarios:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+            }
+
             /* ESTADÍSTICAS */
             .estadisticas-section {
                 margin-bottom: 3rem;
@@ -666,32 +675,36 @@
                     </div>
                 </div>
 
+                <!-- Seccion de predicciones -->
+                 
+
                 <!-- SECCIÓN: ACCIONES RÁPIDAS -->
                 <div class="acciones-rapidas-section">
-                    <div class="section-title">
-                        <i class="fas fa-plus-circle"></i>
-                        Crear nuevo elemento
-                    </div>
+            
                     <div class="acciones-grid">
                         <a href="{% url 'create_user' %}" class="btn-accion btn-usuario" title="Crear nuevo usuario">
                             <i class="fas fa-user-plus"></i>
-                            <span>Usuario</span>
+                            <span>Nuevo Usuario</span>
                         </a>
                         <a href="{% url 'create_especialidad' %}" class="btn-accion btn-especialidad" title="Crear nueva especialidad">
                             <i class="fas fa-stethoscope"></i>
-                            <span>Especialidad</span>
+                            <span>Nueva Especialidad</span>
                         </a>
                         <a href="{% url 'create_medico' %}" class="btn-accion btn-medico" title="Crear nuevo médico">
                             <i class="fas fa-user-md"></i>
-                            <span>Médico</span>
+                            <span>Nuevo Médico</span>
                         </a>
                         <a href="{% url 'create_consultorio' %}" class="btn-accion btn-consultorio" title="Crear nuevo consultorio">
                             <i class="fas fa-hospital"></i>
-                            <span>Consultorio</span>
+                            <span>Nuevo Consultorio</span>
                         </a>
                         <a href="{% url 'create_horario' %}" class="btn-accion btn-horario" title="Crear nuevo horario">
                             <i class="fas fa-clock"></i>
-                            <span>Horario</span>
+                            <span>Nuevo Horario</span>
+                        </a>
+                        <a href="{% url 'list_horarios' %}" class="btn-accion btn-ver-horarios" title="Ver horarios existentes">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Ver Horarios</span>
                         </a>
                     </div>
                 </div>

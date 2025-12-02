@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Especialidad - Alfa Hospital</title>
+    <title>Crear Cita - Alfa Hospital</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -35,8 +35,8 @@
         <div class="login-container">
             <div class="login-card">
                 <div class="login-header">
-                    <h1>Nueva Especialidad</h1>
-                    <p>Registre una nueva especialidad médica</p>
+                    <h1>Nueva Cita</h1>
+                    <p>Seleccione la fecha y la especialidad para buscar disponibilidad</p>
                 </div>
 
                 {% if messages %}
@@ -49,17 +49,17 @@
 
                 <form class="login-form" method="post">
                     {% csrf_token %}
-                    
+
                     <div class="form-group">
-                        <label for="{{ form.nombre.id_for_label }}">Nombre de la Especialidad *</label>
-                        {{ form.nombre }}
-                        {{ form.nombre.errors }}
+                        <label for="{{ form.fecha.id_for_label }}">Fecha *</label>
+                        {{ form.fecha }}
+                        {{ form.fecha.errors }}
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.duracion_cita.id_for_label }}">Duración de Cita *</label>
-                        {{ form.duracion_cita }}
-                        {{ form.duracion_cita.errors }}
+                        <label for="{{ form.especialidad.id_for_label }}">Especialidad *</label>
+                        {{ form.especialidad }}
+                        {{ form.especialidad.errors }}
                     </div>
 
                     {% if form.non_field_errors %}
@@ -68,8 +68,8 @@
                         </div>
                     {% endif %}
 
-                    <button type="submit" class="login-btn">Crear Especialidad</button>
-                    <a href="{% url 'control_users' %}" class="login-btn btn-secondary" style="text-align: center; text-decoration: none; display: block;">Cancelar</a>
+                    <button type="submit" class="login-btn">Buscar Disponibilidad</button>
+                    <a href="{% url 'dashboard_usuario' %}" class="login-btn btn-secondary" style="text-align: center; text-decoration: none; display: block;">Cancelar</a>
                 </form>
             </div>
         </div>

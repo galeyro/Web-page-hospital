@@ -82,16 +82,8 @@ class CreateMedicoForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         label='Tipo de Médico'
     )
-    numero_licencia = forms.CharField(
-        max_length=50,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Número de Licencia (opcional)'
-        })
-    )
     consultorio = forms.ModelChoiceField(
-        queryset=Consultorio.objects.filter(activo=True),
+        queryset=Consultorio.objects.all(),
         required=False,
         widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_consultorio'}),
         label='Consultorio (solo para internos)'
@@ -100,7 +92,7 @@ class CreateMedicoForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Hacer el queryset dinámico para actualizar en cada instancia
-        self.fields['consultorio'].queryset = Consultorio.objects.filter(activo=True)
+        self.fields['consultorio'].queryset = Consultorio.objects.all()
     
     def clean(self):
         cleaned_data = super().clean()
@@ -163,19 +155,13 @@ class CreateConsultorioForm(forms.ModelForm):
     
     class Meta:
         model = Consultorio
-        fields = ['numero', 'tipo', 'descripcion', 'activo']
+        fields = ['numero', 'tipo']
         widgets = {
             'numero': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Número del consultorio'
             }),
             'tipo': forms.Select(attrs={'class': 'form-control'}),
-            'descripcion': forms.Textarea(attrs={
-                'class': 'form-control',
-                'placeholder': 'Descripción (opcional)',
-                'rows': 3
-            }),
-            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
     
     def clean_numero(self):
@@ -188,34 +174,72 @@ class CreateConsultorioForm(forms.ModelForm):
 class CreateHorarioForm(forms.ModelForm):
     """Formulario para crear un horario de médico"""
     
+    # Opciones para horas (07:00 a 20:00) y minutos
+    HORAS_CHOICES = [(str(h).zfill(2), f"{h:02d}") for h in range(7, 21)]
+    MINUTOS_CHOICES = [('00', '00'), ('15', '15'), ('30', '30'), ('45', '45')]
+
+    hora_inicio_h = forms.ChoiceField(
+        choices=HORAS_CHOICES, 
+        label="Hora Inicio", 
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    hora_inicio_m = forms.ChoiceField(
+        choices=MINUTOS_CHOICES, 
+        label="Minutos Inicio", 
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    hora_fin_h = forms.ChoiceField(
+        choices=HORAS_CHOICES, 
+        label="Hora Fin", 
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    hora_fin_m = forms.ChoiceField(
+        choices=MINUTOS_CHOICES, 
+        label="Minutos Fin", 
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
     class Meta:
         model = Horario
-        fields = ['medico', 'dia_semana', 'hora_inicio', 'hora_fin']
+        fields = ['medico', 'dia_semana']
         widgets = {
             'medico': forms.Select(attrs={'class': 'form-control'}),
             'dia_semana': forms.Select(attrs={'class': 'form-control'}),
-            'hora_inicio': forms.TimeInput(attrs={
-                'class': 'form-control',
-                'type': 'time'
-            }),
-            'hora_fin': forms.TimeInput(attrs={
-                'class': 'form-control',
-                'type': 'time'
-            })
         }
     
     def clean(self):
         cleaned_data = super().clean()
-        hora_inicio = cleaned_data.get('hora_inicio')
-        hora_fin = cleaned_data.get('hora_fin')
+        
+        # Obtener datos de los selects
+        h_ini = cleaned_data.get('hora_inicio_h')
+        m_ini = cleaned_data.get('hora_inicio_m')
+        h_fin = cleaned_data.get('hora_fin_h')
+        m_fin = cleaned_data.get('hora_fin_m')
+        
+        if h_ini and m_ini and h_fin and m_fin:
+            try:
+                t_inicio = time(int(h_ini), int(m_ini))
+                t_fin = time(int(h_fin), int(m_fin))
+                
+                if t_fin <= t_inicio:
+                    raise ValidationError('La hora de fin debe ser posterior a la hora de inicio')
+                    
+                # Guardamos temporalmente para usarlo en save()
+                cleaned_data['hora_inicio_calculada'] = t_inicio
+                cleaned_data['hora_fin_calculada'] = t_fin
+
+                # Asignamos a la instancia para que pase las validaciones del modelo
+                self.instance.hora_inicio = t_inicio
+                self.instance.hora_fin = t_fin
+                
+            except ValueError:
+                raise ValidationError('Hora inválida')
+        
+        # Validar que no exista otro horario para el mismo médico el mismo día
         medico = cleaned_data.get('medico')
         dia_semana = cleaned_data.get('dia_semana')
         
-        if hora_inicio and hora_fin:
-            if hora_fin <= hora_inicio:
-                raise ValidationError('La hora de fin debe ser posterior a la hora de inicio')
-        
-        # Validar que no exista otro horario para el mismo médico el mismo día
         if medico and dia_semana is not None:
             existe = Horario.objects.filter(
                 medico=medico,
@@ -229,22 +253,29 @@ class CreateHorarioForm(forms.ModelForm):
         
         return cleaned_data
 
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        if 'hora_inicio_calculada' in self.cleaned_data:
+            instance.hora_inicio = self.cleaned_data['hora_inicio_calculada']
+        if 'hora_fin_calculada' in self.cleaned_data:
+            instance.hora_fin = self.cleaned_data['hora_fin_calculada']
+            
+        if commit:
+            instance.save()
+        return instance
+
 
 class CreateEspecialidadForm(forms.ModelForm):
     """Formulario para crear una nueva especialidad"""
     
     class Meta:
         model = Especialidad
-        fields = ['nombre', 'descripcion', 'duracion_cita']
+        fields = ['nombre', 'duracion_cita']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Nombre de la especialidad'
-            }),
-            'descripcion': forms.Textarea(attrs={
-                'class': 'form-control',
-                'placeholder': 'Descripción (opcional)',
-                'rows': 3
             }),
             'duracion_cita': forms.Select(attrs={'class': 'form-control'})
         }

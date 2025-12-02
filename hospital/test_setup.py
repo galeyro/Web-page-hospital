@@ -23,15 +23,14 @@ print("🔧 Configurando datos de prueba...")
 
 # 1. Crear especialidades
 especialidades = [
-    {'nombre': 'Cardiología', 'descripcion': 'Especialidad del corazón', 'duracion_cita': 30},
-    {'nombre': 'Dermatología', 'descripcion': 'Especialidad de la piel', 'duracion_cita': 30},
+    {'nombre': 'Cardiología', 'duracion_cita': 30},
+    {'nombre': 'Dermatología', 'duracion_cita': 30},
 ]
 
 for esp in especialidades:
     obj, created = Especialidad.objects.get_or_create(
         nombre=esp['nombre'],
         defaults={
-            'descripcion': esp['descripcion'],
             'duracion_cita': esp['duracion_cita']
         }
     )
@@ -40,18 +39,16 @@ for esp in especialidades:
 
 # 2. Crear consultorios
 consultorios = [
-    {'numero': 101, 'tipo': 'interno', 'descripcion': 'Consultorio interno 1'},
-    {'numero': 102, 'tipo': 'interno', 'descripcion': 'Consultorio interno 2'},
-    {'numero': 201, 'tipo': 'externo', 'descripcion': 'Consultorio externo 1'},
+    {'numero': 101, 'tipo': 'interno'},
+    {'numero': 102, 'tipo': 'interno'},
+    {'numero': 201, 'tipo': 'externo'},
 ]
 
 for cons in consultorios:
     obj, created = Consultorio.objects.get_or_create(
         numero=cons['numero'],
         defaults={
-            'tipo': cons['tipo'],
-            'descripcion': cons['descripcion'],
-            'activo': True
+            'tipo': cons['tipo']
         }
     )
     status = "✅ Creado" if created else "ℹ️  Existía"
@@ -67,7 +64,7 @@ else:
 # 4. Verificar disponibilidad de especialidades y consultorios en formularios
 print(f"\n📊 Estadísticas:")
 print(f"  - Especialidades activas: {Especialidad.objects.count()}")
-print(f"  - Consultorios activos: {Consultorio.objects.filter(activo=True).count()}")
+print(f"  - Consultorios activos: {Consultorio.objects.count()}")
 print(f"  - Médicos totales: {Medico.objects.count()}")
 print(f"  - Horarios: {Horario.objects.count()}")
 

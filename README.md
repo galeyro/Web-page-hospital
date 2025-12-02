@@ -45,6 +45,12 @@
 - ✅ **Sistema de roles** (Admin, Médico, Usuario)
 - ✅ **Dashboard personalizado** por rol
 
+### Por implementar
+
+- **Modificar la vista del dashboard** del usuario administradores
+- **Hacer la predicción de médicos y especialidades** basado en hechos históricos
+- **Llenar de datos** historicos la base de datos 
+
 ### Seguridad
 
 - 🔐 **Autenticación personalizada** basada en sesiones

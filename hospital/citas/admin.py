@@ -4,36 +4,36 @@ from .models import Especialidad, Consultorio, Medico, Horario, Cita
 
 @admin.register(Especialidad)
 class EspecialidadAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'duracion_cita', 'descripcion')
+    list_display = ('nombre', 'duracion_cita')
     search_fields = ('nombre',)
     ordering = ('nombre',)
 
 
 @admin.register(Consultorio)
 class ConsultorioAdmin(admin.ModelAdmin):
-    list_display = ('numero', 'tipo', 'activo', 'descripcion')
-    list_filter = ('tipo', 'activo')
+    list_display = ('numero', 'tipo')
+    list_filter = ('tipo',)
     search_fields = ('numero',)
     ordering = ('numero',)
 
 
 @admin.register(Medico)
 class MedicoAdmin(admin.ModelAdmin):
-    list_display = ('get_nombre_medico', 'especialidad', 'tipo', 'consultorio', 'activo')
-    list_filter = ('tipo', 'activo', 'especialidad')
-    search_fields = ('usuario__nombres', 'usuario__apellidos', 'numero_licencia')
+    list_display = ('get_nombre_medico', 'especialidad', 'tipo', 'consultorio')
+    list_filter = ('tipo', 'especialidad')
+    search_fields = ('usuario__nombres', 'usuario__apellidos')
     readonly_fields = ('fecha_registro', 'usuario')
     ordering = ('usuario__nombres',)
 
     fieldsets = (
         ('Información Personal', {
-            'fields': ('usuario', 'numero_licencia')
+            'fields': ('usuario',)
         }),
         ('Información Profesional', {
             'fields': ('especialidad', 'tipo', 'consultorio')
         }),
         ('Estado', {
-            'fields': ('activo', 'fecha_registro')
+            'fields': ('fecha_registro',)
         }),
     )
 
@@ -74,8 +74,8 @@ class HorarioAdmin(admin.ModelAdmin):
 
 @admin.register(Cita)
 class CitaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'paciente', 'medico', 'fecha', 'hora_inicio', 'estado', 'consultorio')
-    list_filter = ('estado', 'fecha', 'medico__especialidad')
+    list_display = ('id', 'paciente', 'medico', 'fecha', 'hora_inicio', 'consultorio')
+    list_filter = ('fecha', 'medico__especialidad')
     search_fields = ('paciente__nombres', 'medico__usuario__nombres')
     readonly_fields = ('fecha_creacion', 'especialidad')
     ordering = ('-fecha', 'hora_inicio')
@@ -86,9 +86,6 @@ class CitaAdmin(admin.ModelAdmin):
         }),
         ('Horario', {
             'fields': ('fecha', 'hora_inicio', 'hora_fin')
-        }),
-        ('Estado', {
-            'fields': ('estado', 'razon_cancelacion')
         }),
         ('Auditoría', {
             'fields': ('fecha_creacion',),

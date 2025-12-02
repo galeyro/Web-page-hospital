@@ -99,6 +99,9 @@ class Usuario(models.Model):
         default='usuario'  # Por defecto, nuevo usuario es 'usuario'
     )
     fecha_registro = models.DateTimeField(auto_now_add=True)
+    
+    def obtener_telefono(self):
+        return f"{self.telefono}"
 
     def __str__(self):
         return f"{self.nombres} {self.apellidos}"

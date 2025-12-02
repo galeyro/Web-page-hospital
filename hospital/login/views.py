@@ -2,64 +2,11 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password, check_password
+from django.utils import timezone
 from .models import Usuario
 from citas.models import Medico, Cita, Especialidad, Consultorio, Horario
 from .forms import CreateMedicoForm, CreateConsultorioForm, CreateHorarioForm, CreateEspecialidadForm
-
-# Create your views here.
-'''
-# MVC = Model View Controller
-# MVT = Model Template View
-
-Aqui a la vista se le llama template y el controllador se llama View
-'''
-
-# DECORADOR PARA PROTEGER VISTAS
-def login_required(view_func):
-    """
-    Decorador que verifica si el usuario está logueado.
-    Si no está logueado, redirige al login.
-    """
-    def wrapper(request, *args, **kwargs):
-        # Verificar si existe una sesión activa
-        if 'usuario_id' not in request.session:
-            messages.warning(request, 'Debes iniciar sesión para acceder a esta página')
-            return redirect('login')
-        
-        # Si está logueado, ejecutar la vista normalmente
-        return view_func(request, *args, **kwargs)
-    
-    # Mantener el nombre y documentación de la función original
-    wrapper.__name__ = view_func.__name__
-    wrapper.__doc__ = view_func.__doc__
-    return wrapper
-
-# DECORADOR PARA VALIDAR ROLES
-def rol_required(rol_requerido):
-    """
-    Decorador que verifica si el usuario tiene el rol necesario.
-    """
-    def decorator(view_func):
-        def wrapper(request, *args, **kwargs):
-            # Primero verifica si está logueado
-            if 'usuario_id' not in request.session:
-                messages.warning(request, 'Debes iniciar sesión')
-                return redirect('login')
-            
-            # Obtener el usuario y su rol
-            usuario = Usuario.objects.get(id=request.session['usuario_id'])
-            
-            # Verificar si tiene el rol correcto
-            if usuario.rol != rol_requerido:
-                messages.error(request, f'No tienes permisos. Se requiere rol: {rol_requerido}')
-                return redirect('index')
-            
-            return view_func(request, *args, **kwargs)
-        
-        wrapper.__name__ = view_func.__name__
-        wrapper.__doc__ = view_func.__doc__
-        return wrapper
-    return decorator
+from .decorators import login_required, rol_required
 
 # Redirect functions for nav ----------------------------
 def index(request):
@@ -92,6 +39,11 @@ def create_user(request):
             usuario.full_clean()  # Ejecuta las validaciones del modelo
             usuario.save()
             messages.success(request, 'Usuario creado exitosamente!')
+            
+            # Si el que crea es admin, volver al panel de control
+            if request.session.get('usuario_rol') == 'admin':
+                return redirect('control_users')
+                
             return redirect('login')
         
         except ValidationError as e:
@@ -166,7 +118,7 @@ def control_users(request):
     # Estadísticas de médicos
     total_medicos_internos = medicos.filter(tipo='interno').count()
     total_medicos_externos = medicos.filter(tipo='externo').count()
-    total_medicos_activos = medicos.filter(activo=True).count()
+    total_medicos_activos = medicos.count()
     
     # Estadísticas de consultorios
     total_consultorios_internos = Consultorio.objects.filter(tipo='interno').count()
@@ -174,8 +126,6 @@ def control_users(request):
     
     # Estadísticas de citas
     total_citas = citas.count()
-    citas_agendadas = citas.filter(estado='agendada').count()
-    citas_completadas = citas.filter(estado='completada').count()
     
     # Especialidades
     especialidades = Especialidad.objects.all().count()
@@ -202,11 +152,10 @@ def control_users(request):
         
         # Stats citas
         'total_citas': total_citas,
-        'citas_agendadas': citas_agendadas,
-        'citas_completadas': citas_completadas,
         
         # Stats especialidades
         'total_especialidades': especialidades,
+        
     }
     return render(request, 'control_users.html', context)
 
@@ -229,9 +178,14 @@ def change_rol(request, user_id):
 @rol_required('usuario')
 def dashboard_usuario(request):
     # Aquí irán las citas del usuario desde el modelo que crearemos
-    # Por ahora pasamos una lista vacía TODO: corregir
+    # Se obtiene el paciente (usuario) que esta iniciado la sesion
+    paciente = Usuario.objects.get(id=request.session["usuario_id"])
+    citas = Cita.objects.filter(
+        paciente = paciente # Se filtra por ese usuario
+    )
+
     context = {
-        'citas': []  # Se llenará cuando tengamos el modelo de Citas
+        'citas': citas  # Se llenará cuando tengamos el modelo de Citas
     }
     return render(request, 'dashboard_usuario.html', context)
 
@@ -239,10 +193,31 @@ def dashboard_usuario(request):
 # Dashboard para médicos
 @rol_required('medico')
 def dashboard_medico(request):
-    # Aquí irán las citas del médico TODO: relacionar con citas de usuarios
+    # Completamente relacionadas las citas con los medicos
+    usuario = Usuario.objects.get(id=request.session["usuario_id"]) # Obtenemos primero el usuario asignado a la sesion (medico inicio sesión)
+
+    # Obtener la instancia de Medico asociada
+    try:
+        medico = usuario.medico # Verificamos que sea medico, este registrado como medico
+    except Medico.DoesNotExist:
+        return HttpResponse("Este usuario no está registrado como médico.")
+    
+    hoy = timezone.localdate()
+    
+    # Citas del medico que tiene hoy
+    citas_hoy = Cita.objects.filter(
+        medico = medico,
+        fecha = hoy
+    ).order_by('hora_inicio')
+    
+    # Citas del medico en total, de forma historica
+    citas_historial = Cita.objects.filter(
+        medico=medico
+    ).order_by('-fecha', '-hora_inicio')
+    
     context = {
-        'citas_hoy': [],       # Se llenará cuando tengamos el modelo de Citas
-        'citas_historial': []  # Se llenará cuando tengamos el modelo de Citas
+        'citas_hoy': citas_hoy,       # Se llenará cuando tengamos el modelo de Citas
+        'citas_historial': citas_historial  # Se llenará cuando tengamos el modelo de Citas
     }
     return render(request, 'dashboard_medico.html', context)
 
@@ -276,7 +251,6 @@ def create_medico(request):
                     usuario=usuario,
                     especialidad=form.cleaned_data['especialidad'],
                     tipo=form.cleaned_data['tipo'],
-                    numero_licencia=form.cleaned_data.get('numero_licencia', ''),
                     consultorio=form.cleaned_data.get('consultorio')
                 )
                 medico.full_clean()
@@ -372,6 +346,27 @@ def create_especialidad(request):
     
     context = {'form': form}
     return render(request, 'create_especialidad.html', context)
+
+# ===== LISTAR HORARIOS =====
+@rol_required('admin')
+def list_horarios(request):
+    """Listar horarios con filtro por médico"""
+    medicos = Medico.objects.select_related('usuario').order_by('usuario__nombres')
+    
+    medico_id = request.GET.get('medico_id')
+    if medico_id:
+        horarios = Horario.objects.filter(medico_id=medico_id).select_related('medico', 'medico__usuario').order_by('dia_semana', 'hora_inicio')
+    else:
+        # Si no hay selección, no mostramos horarios (o podríamos mostrar todos)
+        # Según requerimiento: "solo el seleccionado cargue sus horarios"
+        horarios = None
+    
+    context = {
+        'medicos': medicos,
+        'horarios': horarios,
+        'medico_seleccionado': int(medico_id) if medico_id else None
+    }
+    return render(request, 'list_horarios.html', context)
 
 # Delete specific user from DB
 @login_required

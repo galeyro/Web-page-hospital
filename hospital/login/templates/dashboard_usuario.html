@@ -31,7 +31,7 @@
                     <h1>Mis Citas Médicas</h1>
                     <p style="color: #7f8c8d; margin-bottom: 1.5rem;">Gestiona tus citas médicas aquí</p>
                     
-                    <a href="#" class="btn-nueva-cita" style="display: inline-block; background: #2ecc71; color: white; padding: 0.75rem 1.5rem; border-radius: 5px; text-decoration: none; font-weight: 600; margin-bottom: 2rem;">
+                    <a href="{% url 'create_cita' %}" class="btn-nueva-cita" style="display: inline-block; background: #2ecc71; color: white; padding: 0.75rem 1.5rem; border-radius: 5px; text-decoration: none; font-weight: 600; margin-bottom: 2rem;">
                         + Nueva Cita
                     </a>
                 </section>
@@ -50,9 +50,9 @@
                                 </div>
                                 
                                 <div class="cita-info">
-                                    <p><strong>Médico:</strong> {{ cita.medico_nombre }}</p>
+                                    <p><strong>Médico:</strong> {{ cita.medico.nombre_completo }}</p>
                                     <p><strong>Fecha:</strong> {{ cita.fecha }}</p>
-                                    <p><strong>Hora:</strong> {{ cita.hora }}</p>
+                                    <p><strong>Hora:</strong> {{ cita.hora_inicio }}</p>
                                     <p><strong>Consultorio:</strong> {{ cita.consultorio }}</p>
                                 </div>
 
@@ -75,7 +75,7 @@
                     {% else %}
                         <div class="sin-citas" style="text-align: center; padding: 2rem; color: #7f8c8d;">
                             <p style="font-size: 1.1rem; margin-bottom: 1rem;">No tienes citas agendadas</p>
-                            <a href="#" style="color: #3498db; text-decoration: none; font-weight: 600;">Agendar una cita ahora</a>
+                            <a href="{% url 'create_cita' %}" style="color: #3498db; text-decoration: none; font-weight: 600;">Agendar una cita ahora</a>
                         </div>
                     {% endif %}
                 </section>

@@ -10,7 +10,6 @@ from .validators import validar_cedula_ecuador
 # ===== ESPECIALIDADES =====
 class Especialidad(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
-    descripcion = models.TextField(blank=True)
     duracion_cita = models.IntegerField(
         choices=[(15, '15 minutos'), (30, '30 minutos')],
         default=30
@@ -32,8 +31,6 @@ class Consultorio(models.Model):
 
     numero = models.IntegerField(unique=True)
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
-    descripcion = models.TextField(blank=True)
-    activo = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['numero']
@@ -52,7 +49,6 @@ class Medico(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='medico')
     especialidad = models.ForeignKey(Especialidad, on_delete=models.SET_NULL, null=True)
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
-    numero_licencia = models.CharField(max_length=50, blank=True)
     consultorio = models.ForeignKey(
         Consultorio, 
         on_delete=models.SET_NULL, 
@@ -60,11 +56,13 @@ class Medico(models.Model):
         blank=True,
         related_name='medicos'
     )
-    activo = models.BooleanField(default=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['usuario__nombres']
+        
+    def nombre_completo(self):
+        return f"Dr. {self.usuario.nombres} {self.usuario.apellidos}"
 
     def clean(self):
         # Validación: si es interno DEBE tener consultorio
@@ -81,6 +79,13 @@ class Medico(models.Model):
                 raise ValidationError("Los médicos internos solo pueden usar consultorios internos.")
             if self.tipo == 'externo' and self.consultorio.tipo != 'externo':
                 raise ValidationError("Los médicos externos solo pueden usar consultorios externos.")
+            
+            # Validación: Exclusividad (Un consultorio no puede tener dos médicos asignados)
+            ocupante = Medico.objects.filter(consultorio=self.consultorio).exclude(pk=self.pk).first()
+            if ocupante:
+                raise ValidationError(
+                    f"El consultorio {self.consultorio.numero} ya está asignado al Dr. {ocupante.usuario.nombres} {ocupante.usuario.apellidos}."
+                )
 
     def __str__(self):
         return f"Dr. {self.usuario.nombres} - {self.especialidad.nombre if self.especialidad else 'Sin especialidad'}"
@@ -117,13 +122,6 @@ class Horario(models.Model):
 
 # ===== CITAS =====
 class Cita(models.Model):
-    ESTADO_CHOICES = [
-        ('agendada', 'Agendada'),
-        ('completada', 'Completada'),
-        ('cancelada', 'Cancelada'),
-        ('no_asistio', 'No Asistió'),
-    ]
-
     paciente = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='citas')
     medico = models.ForeignKey(Medico, on_delete=models.CASCADE, related_name='citas')
     consultorio = models.ForeignKey(Consultorio, on_delete=models.SET_NULL, null=True, blank=True)
@@ -131,8 +129,6 @@ class Cita(models.Model):
     fecha = models.DateField()
     hora_inicio = models.TimeField()
     hora_fin = models.TimeField()
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='agendada')
-    razon_cancelacion = models.TextField(blank=True, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -169,8 +165,7 @@ class Cita(models.Model):
         # 4) Validar que no haya solapamiento con otras citas del médico
         solapadas = Cita.objects.filter(
             medico=self.medico,
-            fecha=self.fecha,
-            estado__in=['agendada', 'completada']  # No contar canceladas
+            fecha=self.fecha
         ).exclude(pk=self.pk).filter(
             Q(hora_inicio__lt=self.hora_fin) & Q(hora_fin__gt=self.hora_inicio)
         )
