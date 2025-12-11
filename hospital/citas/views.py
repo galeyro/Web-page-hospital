@@ -38,7 +38,6 @@ def sumar_minutos(hora, minutos):
 # Permite verificar que no existan 2 citas al misma hora sobrelapadas
 def hay_conflicto(inicio, fin, citas):
     for c in citas:
-        # Fin <= c.hora_inicio es la verificacion para que 
         if not (fin <= c.hora_inicio or inicio >= c.hora_fin):
             return True
     return False
@@ -91,14 +90,14 @@ def crear_cita(request):
                 # Verificamos el horario de los medicos
                 horarios = Horario.objects.filter(
                     medico=medico,
-                    dia_semana=dia_semana
+                    dia_semana=dia_semana #dia seleccionado por el usuario
                 )
                 
                 # Si no tienen horario ese día, pasamos
                 if not horarios.exists():
                     continue
                 
-                # Verificamos las citas existentes por medio en cierta fecha
+                # Verificamos las citas existentes por medico en cierta fecha
                 citas_existentes = Cita.objects.filter(
                     medico=medico,
                     fecha=fecha
@@ -106,6 +105,7 @@ def crear_cita(request):
 
                 for horario in horarios:
                     # Establecemos la hora actual como la hora de inicio de los médicos
+                    # es como un cursor que se mueve por el horario
                     hora_actual = horario.hora_inicio
 
                     # Si la cita es para HOY, saltar horas pasadas, para evitar asignaciones ilógicas
@@ -165,7 +165,7 @@ def confirmar_cita(request):
         hora_inicio_str = request.POST.get("hora_inicio") # hora inicio obtenida del form
         hora_fin_str = request.POST.get("hora_fin") # hora fin obtenida del form
         # Esto es para obtener las fechas, horas normalizadas a formato que Django reconoce y puede validar
-        fecha, hora_inicio, hora_fin = normalizar_fecha_hora(
+        fecha, hora_inicio, hora_fin = normalizar_fecha_hora( #OJO SE NORMALIZA
             fecha_str,
             hora_inicio_str,
             hora_fin_str
