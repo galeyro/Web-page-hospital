@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required as auth_login_required
+from django.conf import settings
 from .models import Usuario
 from citas.models import Medico, Cita, Especialidad, Consultorio, Horario
 from .forms import CreateMedicoForm, CreateConsultorioForm, CreateHorarioForm, CreateEspecialidadForm
@@ -11,6 +13,81 @@ from .decorators import login_required, rol_required
 # Redirect functions for nav ----------------------------
 def index(request):
     return render(request, 'index.html')
+
+@auth_login_required
+def post_login_dispatch(request):
+    """
+    View to dispatch users to their respective dashboards after SSO login.
+    Uses the session variables set by the signal handler.
+    """
+    rol = request.session.get('usuario_rol')
+    
+    # Si esta autenticado en Django (OIDC) pero no tiene rol en session,
+    # significa que es un usuario nuevo en BD local -> Completar Perfil
+    if not rol and request.user.is_authenticated:
+        return redirect('complete_profile')
+    
+    if rol == 'admin':
+        return redirect('control_users')
+    elif rol == 'medico':
+        return redirect('dashboard_medico')
+    elif rol == 'usuario':
+        return redirect('dashboard_usuario')
+    else:
+        # Fallback if no role or unknown
+        return redirect('index')
+
+@auth_login_required
+def complete_profile(request):
+    # Si ya tiene rol, no debería estar aquí
+    if request.session.get('usuario_rol'):
+        return redirect('post_login_dispatch')
+
+    if request.method == 'POST':
+        from .forms import CompleteProfileForm 
+        form = CompleteProfileForm(request.POST)
+        if form.is_valid():
+            # Crear usuario local
+            user_data = form.cleaned_data
+            email = request.user.email  # Email viene del SSO (Django User)
+            
+            # Usar nombres/apellidos del formulario
+            nombres = user_data['nombres']
+            apellidos = user_data['apellidos']
+            
+            try:
+                nuevo_usuario = Usuario.objects.create(
+                    nombres=nombres,
+                    apellidos=apellidos,
+                    cedula=user_data['cedula'],
+                    telefono=user_data['telefono'],
+                    email=email,
+                    fecha_nacimiento=user_data['fecha_nacimiento'],
+                    genero=user_data['genero'],
+                    password="sso_managed_password", # No se usa password local
+                    rol='usuario' # Por defecto rol usuario
+                )
+                
+                # Poblar sesión manualmente
+                request.session['usuario_id'] = nuevo_usuario.id
+                request.session['usuario_nombre'] = nuevo_usuario.nombres
+                request.session['usuario_rol'] = nuevo_usuario.rol
+                
+                messages.success(request, '¡Perfil completado con éxito!')
+                return redirect('dashboard_usuario')
+            except Exception as e:
+                messages.error(request, f'Error al crear usuario: {str(e)}')
+    else:
+        from .forms import CompleteProfileForm
+        # Pre-poblar con datos de SSO si existen
+        initial_data = {
+            'nombres': request.user.first_name,
+            'apellidos': request.user.last_name
+        }
+        form = CompleteProfileForm(initial=initial_data)
+    
+    return render(request, 'complete_profile.html', {'form': form})
+
 # Create user -------------------------------------------
 def create_user(request):
     if request.method == 'POST':
@@ -92,16 +169,17 @@ def login_view(request):
 
 # Logount
 def logout_view(request):
-    # Limpiar mensajes anteriores primero
-    storage = messages.get_messages(request)
-    for message in storage:
-        # Los mensajes se marcan como leídos
-        pass
-
     # Limpiar la sesion
     request.session.flush()
-    messages.success(request, 'Has cerrado sesión correctamente')
-    return redirect('index')
+    
+    # Redirigir a Keycloak Logout
+    keycloak_logout = 'http://localhost:8080/realms/hospital-realm/protocol/openid-connect/logout'
+    redirect_uri = 'http://localhost:8081/'
+    client_id = settings.OIDC_RP_CLIENT_ID
+    
+    logout_url = f"{keycloak_logout}?post_logout_redirect_uri={redirect_uri}&client_id={client_id}"
+    
+    return redirect(logout_url)
 
 @rol_required('admin')
 def control_users(request):

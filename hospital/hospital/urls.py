@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 # Impotar app con mis vistas
 from login import views
@@ -25,6 +25,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('inicio/', views.index, name="inicio"),
+    path('post_login_dispatch/', views.post_login_dispatch, name='post_login_dispatch'),
+    path('complete_profile/', views.complete_profile, name='complete_profile'),
     path('', views.index, name="index"),
     path('login/', views.login_view, name='login'),
     path('create_user/', views.create_user, name='create_user'),
@@ -41,5 +43,8 @@ urlpatterns = [
     path('create_especialidad/', views.create_especialidad, name='create_especialidad'),
     path('list_horarios/', views.list_horarios, name='list_horarios'),
     path('create_cita/', crear_cita, name='create_cita'),
-    path('confirmar_cita/', confirmar_cita, name='confirmar_cita')
+    path('confirmar_cita/', confirmar_cita, name='confirmar_cita'),
+    
+    # OIDC Routes
+    path('oidc/', include('mozilla_django_oidc.urls')),
 ]

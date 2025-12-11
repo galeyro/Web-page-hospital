@@ -40,8 +40,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "login",
-    "citas"
+    "citas",
+    "mozilla_django_oidc",  # OIDC SSO
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'login.oidc_auth.CustomOIDCBackend',  # Custom OIDC Backend
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+# OIDC Configuration
+OIDC_RP_CLIENT_ID = config('OIDC_RP_CLIENT_ID', default='hospital-django')
+OIDC_RP_CLIENT_SECRET = config('OIDC_RP_CLIENT_SECRET', default='WX55nX0Cvrb6Q2xuW0asqi6N9WtdiSSh')
+OIDC_OP_AUTHORIZATION_ENDPOINT = 'http://localhost:8080/realms/hospital-realm/protocol/openid-connect/auth'
+OIDC_OP_TOKEN_ENDPOINT = 'http://localhost:8080/realms/hospital-realm/protocol/openid-connect/token'
+OIDC_OP_USER_ENDPOINT = 'http://localhost:8080/realms/hospital-realm/protocol/openid-connect/userinfo'
+OIDC_OP_JWKS_ENDPOINT = 'http://localhost:8080/realms/hospital-realm/protocol/openid-connect/certs'
+OIDC_RP_SIGN_ALGO = 'RS256'
+
+LOGIN_REDIRECT_URL = '/post_login_dispatch/'
+LOGOUT_REDIRECT_URL = '/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

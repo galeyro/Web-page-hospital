@@ -285,3 +285,84 @@ class CreateEspecialidadForm(forms.ModelForm):
         if nombre and Especialidad.objects.filter(nombre=nombre).exclude(pk=self.instance.pk).exists():
             raise ValidationError('Ya existe una especialidad con este nombre')
         return nombre
+from django import forms
+from django.core.exceptions import ValidationError
+from .models import Usuario, validar_cedula_ecuador, validar_telefono, validar_edad
+from citas.models import Medico, Consultorio, Horario, Especialidad
+from datetime import time
+
+class CompleteProfileForm(forms.Form):
+    """Formulario para completar datos del usuario nuevo desde SSO"""
+    nombres = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nombres'
+        })
+    )
+    apellidos = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Apellidos'
+        })
+    )
+    cedula = forms.CharField(
+        max_length=20,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Cédula (10 dígitos)'
+        })
+    )
+    telefono = forms.CharField(
+        max_length=15,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Teléfono (10 dígitos)'
+        })
+    )
+    fecha_nacimiento = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date'
+        })
+    )
+    genero = forms.ChoiceField(
+        choices=[('M', 'Masculino'), ('F', 'Femenino'), ('O', 'Otro')],
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cedula = cleaned_data.get('cedula', '').strip()
+        telefono = cleaned_data.get('telefono', '').strip()
+        fecha_nacimiento = cleaned_data.get('fecha_nacimiento')
+
+        if cedula:
+            try:
+                validar_cedula_ecuador(cedula)
+            except ValidationError as e:
+                self.add_error('cedula', e.message)
+            
+            if Usuario.objects.filter(cedula=cedula).exists():
+                self.add_error('cedula', 'Ya existe un usuario con esta cédula')
+
+        if telefono:
+            try:
+                validar_telefono(telefono)
+            except ValidationError as e:
+                self.add_error('telefono', e.message)
+
+        if fecha_nacimiento:
+            try:
+                validar_edad(fecha_nacimiento)
+            except ValidationError as e:
+                self.add_error('fecha_nacimiento', e.message)
+        
+        return cleaned_data

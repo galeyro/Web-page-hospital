@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completar Perfil - Alfa Hospital</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .profile-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .btn-submit {
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .btn-submit:hover {
+            background-color: #4f46e5;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            color: #dc2626;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body style="background-color: #f3f4f6; font-family: 'Poppins', sans-serif;">
+    <div class="profile-container">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1f2937;">Bienvenido</h1>
+            <p style="color: #6b7280;">Para finalizar tu registro, necesitamos unos datos adicionales obligatorios.</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-error">
+            <strong>Por favor corrige los siguientes errores:</strong>
+            <ul>
+                {% for field in form %}
+                {% for error in field.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Nombres *</label>
+                {{ form.nombres }}
+            </div>
+
+            <div class="form-group">
+                <label>Apellidos *</label>
+                {{ form.apellidos }}
+            </div>
+
+            <div class="form-group">
+                <label>Cédula *</label>
+                {{ form.cedula }}
+            </div>
+
+            <div class="form-group">
+                <label>Teléfono *</label>
+                {{ form.telefono }}
+            </div>
+
+            <div class="form-group">
+                <label>Fecha de Nacimiento *</label>
+                {{ form.fecha_nacimiento }}
+            </div>
+
+            <div class="form-group">
+                <label>Género *</label>
+                {{ form.genero }}
+            </div>
+
+            <button type="submit" class="btn-submit">Guardar y Continuar</button>
+        </form>
+    </div>
+</body>
+
+</html>
