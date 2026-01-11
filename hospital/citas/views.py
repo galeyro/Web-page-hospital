@@ -8,147 +8,36 @@ from .forms import CitaCreateForm
 from .models import Cita, Horario, Medico, Especialidad, Consultorio
 from login.models import Usuario
 from login.decorators import login_required, rol_required
+from .services.factory import get_cita_service
+from .services.normalizador import normalizar_fecha_hora
 
-def normalizar_fecha_hora(fecha_str, hora_ini_str, hora_fin_str):
-    # --- Fecha ---
-    # Limpia puntos en meses tipo "Dec." -> "Dec"
-    fecha_str = fecha_str.replace(".", "")
-    
-    # Convierte la fecha obtenida a datetime
-    fecha = datetime.strptime(fecha_str, "%b %d, %Y")
-    fecha_final = fecha.strftime("%Y-%m-%d")
-
-    # --- Hora inicio ---
-    hora_ini_str = hora_ini_str.replace(".", "").strip().lower()  # "9:30 am"
-    hora_ini = datetime.strptime(hora_ini_str, "%I:%M %p")
-    hora_ini_final = hora_ini.strftime("%H:%M")
-
-    # --- Hora fin ---
-    hora_fin_str = hora_fin_str.replace(".", "").strip().lower()  # "9:45 am"
-    hora_fin = datetime.strptime(hora_fin_str, "%I:%M %p")
-    hora_fin_final = hora_fin.strftime("%H:%M")
-
-    return fecha_final, hora_ini_final, hora_fin_final
-
-# Hace la suma de los minutos por los bloques
-def sumar_minutos(hora, minutos):
-    dt = datetime.combine(datetime.today(), hora)
-    return (dt + timedelta(minutes=minutos)).time()
-
-# Permite verificar que no existan 2 citas al misma hora sobrelapadas
-def hay_conflicto(inicio, fin, citas):
-    for c in citas:
-        if not (fin <= c.hora_inicio or inicio >= c.hora_fin):
-            return True
-    return False
-
-# Sirve para verificar que consultorios están disponibles de los médicos externos
-def consultorio_externo_disponible(fecha, inicio, fin):
-    # Obtiene una sola vez todos los consultorios externos
-    consultorios_externos = Consultorio.objects.filter(tipo='externo')
-
-    # Filtrar solo 1 vez todas las citas de ese día en consultorios externos
-    citas_del_dia = Cita.objects.filter(
-        consultorio__in=consultorios_externos,
-        fecha=fecha
-    ).select_related("consultorio") # trae el consultorio y la cita juntos
-
-    # Convertir citas por consultorio en un diccionario para acceso rápido
-    # Se accede más facilmente a las citas agendadas a cierto consultorio
-    citas_por_consultorio = {}
-    for c in citas_del_dia:
-        citas_por_consultorio.setdefault(c.consultorio_id, []).append(c) # si la clave no existe, crea la lista vacía, sino agrega la cita
-
-    # Verificar disponibilidad por consultorio
-    for consultorio in consultorios_externos:
-        # obtenemos las citas del consultorio
-        citas = citas_por_consultorio.get(consultorio.id, [])
-
-        # Reutilizamos tu función hay_conflicto() para verificar que está disponible
-        if not hay_conflicto(inicio, fin, citas):
-            return consultorio
-
-    return None
-
-
-@login_required 
+@login_required
 @rol_required('usuario')
 def crear_cita(request):
     if request.method == "POST":
-        form = CitaCreateForm(request.POST) # Si se realiza un crear con POST, pasaría este flujo
+        form = CitaCreateForm(request.POST)
 
         if form.is_valid():
             fecha = form.cleaned_data["fecha"]
             especialidad = form.cleaned_data["especialidad"]
-            duracion = especialidad.duracion_cita # Segun la especialidad escogida por usuario se establece la duración
 
-            dia_semana = fecha.weekday() 
+            service = get_cita_service()
+            resultado = service.buscar_disponibilidad(fecha, especialidad)
 
-            medicos = Medico.objects.filter(especialidad=especialidad) # Filtra medicos segun la especialidad escogida y los selecciona
+            if resultado:
+                medico, hora_inicio, hora_fin, consultorio = resultado
+                return render(request, "citas/confirmar_cita.html", {
+                    "fecha": fecha,
+                    "hora_inicio": hora_inicio,
+                    "hora_fin": hora_fin,
+                    "especialidad": especialidad,
+                    "medico": medico,
+                    "consultorio": consultorio,
+                })
 
-            for medico in medicos:
-                # Verificamos el horario de los medicos
-                horarios = Horario.objects.filter(
-                    medico=medico,
-                    dia_semana=dia_semana #dia seleccionado por el usuario
-                )
-                
-                # Si no tienen horario ese día, pasamos
-                if not horarios.exists():
-                    continue
-                
-                # Verificamos las citas existentes por medico en cierta fecha
-                citas_existentes = Cita.objects.filter(
-                    medico=medico,
-                    fecha=fecha
-                ).order_by("hora_inicio")
-
-                for horario in horarios:
-                    # Establecemos la hora actual como la hora de inicio de los médicos
-                    # es como un cursor que se mueve por el horario
-                    hora_actual = horario.hora_inicio
-
-                    # Si la cita es para HOY, saltar horas pasadas, para evitar asignaciones ilógicas
-                    if fecha == timezone.localdate(): # fecha actual según la zona horaria
-                        hora_real = timezone.localtime().time() # hora real actual según la zona horaria
-                        if hora_actual < hora_real:
-                            # Establecemos la hora actual en un slot válido (15 - 30 min) para hacer la asignación
-                            while hora_actual < hora_real and sumar_minutos(hora_actual, duracion) <= horario.hora_fin:
-                                hora_actual = sumar_minutos(hora_actual, duracion)
-    
-                    # Hacemos el bucle para hacer las verificaciones de horario
-                    while sumar_minutos(hora_actual, duracion) <= horario.hora_fin:
-                        hora_fin = sumar_minutos(hora_actual, duracion)
-                        # Si no existe sobrelapamiento de citas por médico pasamos la recomenacion de citas a la vista adecuada
-                        if not hay_conflicto(hora_actual, hora_fin, citas_existentes):
-                            # Si el médico es externo → asignar consultorio externo disponible
-                            # Hacemos doble verificacion de hay conflicto para evitar asignar 2 medicos externos al mismo consultorio en la misma hora
-                            if medico.tipo == "externo":
-                                consultorio = consultorio_externo_disponible(fecha, hora_actual, hora_fin)
-                                if consultorio is None: # Si no encontramos consultorio disponible pasamos al siguiente horario y buscamos de nuevo
-                                    hora_actual = hora_fin
-                                    continue
-                            else:
-                                consultorio = medico.consultorio # Si no es externo no necesita la asignación de consultorio
-                                
-                            # Mostrar recomendación
-                            return render(request, "citas/confirmar_cita.html", {
-                                "fecha": fecha,
-                                "hora_inicio": hora_actual,
-                                "hora_fin": hora_fin,
-                                "especialidad": especialidad,
-                                "medico": medico,
-                                "consultorio": consultorio,
-                            })
-
-                        # Si hay conflictos, ponemos la hora fin calculada como la nueva hora de inicio y seguimos
-                        hora_actual = hora_fin
-
-            # Si no hay médico o disponibilidad mismo, mandamos error
             messages.error(request, "No hay disponibilidad para esa fecha.")
-            return redirect("create_cita") # Redirige a esta misma vista
+            return redirect("create_cita")
 
-    # Si el metodo es GET, solo creamos el formulario y lo pasamos como argumento a la vista
     else:
         form = CitaCreateForm()
 
