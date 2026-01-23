@@ -177,7 +177,7 @@ def logout_view(request):
     
     # Redirigir a Keycloak Logout
     keycloak_logout = 'http://localhost:8080/realms/hospital-realm/protocol/openid-connect/logout'
-    redirect_uri = 'http://localhost:8081/'
+    redirect_uri = 'http://localhost:8082/'
     client_id = settings.OIDC_RP_CLIENT_ID
     
     logout_url = f"{keycloak_logout}?post_logout_redirect_uri={redirect_uri}&client_id={client_id}"

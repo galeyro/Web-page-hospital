@@ -18,7 +18,7 @@
                     <img src="{% static 'images/LOGO-COLOR.svg' %}" alt="Alfa Hospital Logo" class="logo-img">
                 </div>
                 <div class="nav-links">
-                    <span style="color: #2c3e50; font-weight: 500;">Bienvenido, {{ request.session.usuario_nombre }}</span>
+                    <span style="color: #2c3e50; font-weight: 500;">Bienvenido, {{ request.session.usuario_nombre }} <small>({{ request.session.usuario_email }})</small></span>
                     <a href="{% url 'logout' %}" class="login-btn">Cerrar Sesión</a>
                 </div>
             </nav>

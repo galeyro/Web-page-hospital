@@ -45,6 +45,7 @@ def sync_custom_session(sender, user, request, **kwargs):
         # Populate the session exactly as the manual login does
         request.session['usuario_id'] = app_user.id
         request.session['usuario_nombre'] = app_user.nombres
+        request.session['usuario_email'] = app_user.email
         request.session['usuario_rol'] = app_user.rol
         
         print(f"DEBUG: Session synced for Usuario ID {app_user.id} ({app_user.rol})")
@@ -66,6 +67,7 @@ def sync_custom_session(sender, user, request, **kwargs):
             # Populate session for the new user
             request.session['usuario_id'] = new_user.id
             request.session['usuario_nombre'] = new_user.nombres
+            request.session['usuario_email'] = new_user.email
             request.session['usuario_rol'] = new_user.rol
             
             print(f"DEBUG: Created and synced new user {new_user.email}")

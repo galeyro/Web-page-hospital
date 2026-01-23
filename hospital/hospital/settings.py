@@ -59,7 +59,7 @@ OIDC_OP_JWKS_ENDPOINT = 'http://localhost:8080/realms/hospital-realm/protocol/op
 OIDC_RP_SIGN_ALGO = 'RS256'
 
 LOGIN_REDIRECT_URL = '/post_login_dispatch/'
-LOGOUT_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = 'http://localhost:8082/'
 LOGIN_URL = 'oidc_authentication_init'
 
 MIDDLEWARE = [
