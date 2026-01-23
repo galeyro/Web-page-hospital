@@ -35,6 +35,7 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+credenciales_gcp.json
 
 # Migrations (opcional, descomentar si no quieres versionar migraciones)
 # */migrations/*
