@@ -45,6 +45,8 @@ urlpatterns = [
     path('create_cita/', crear_cita, name='create_cita'),
     path('confirmar_cita/', confirmar_cita, name='confirmar_cita'),
     
+    path('hospital/redactar/', views.vista_enviar_secreto, name='enviar_secreto'),
+    
     # OIDC Routes
     path('oidc/', include('mozilla_django_oidc.urls')),
 ]

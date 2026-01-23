@@ -9,6 +9,8 @@ from .models import Usuario
 from citas.models import Medico, Cita, Especialidad, Consultorio, Horario
 from .forms import CreateMedicoForm, CreateConsultorioForm, CreateHorarioForm, CreateEspecialidadForm
 from .decorators import login_required, rol_required
+import requests
+from hospital import kms_utils
 
 # Redirect functions for nav ----------------------------
 def index(request):
@@ -538,3 +540,40 @@ def update_user(request, user_id):
     # Si es GET, mostrar formulario con datos actuales
     context = {'usuario': usuario}
     return render(request, 'update_user.html', context)
+
+# ===== ENVIAR SECRETO A MINICORE =====
+@login_required # O rol_required('medico') si prefieres restringirlo
+def vista_enviar_secreto(request):
+    if request.method == 'POST':
+        texto = request.POST.get('texto')
+        
+        if not texto:
+            messages.error(request, "El mensaje no puede estar vacío.")
+        else:
+            try:
+                # 1. Encriptar usando KMS Local Utils
+                texto_encriptado = kms_utils.encriptar(texto)
+                
+                # 2. Preparar Payload
+                payload = {'data': texto_encriptado}
+                
+                # 3. Enviar a Minicore (localhost:8081)
+                url_minicore = 'http://localhost:8081/api/guardar/'
+                
+                print(f"DEBUG: Enviando payload a {url_minicore}...")
+                response = requests.post(url_minicore, json=payload, timeout=5)
+                
+                # 4. Verificar respuesta
+                if response.status_code == 200 or response.status_code == 201:
+                    messages.success(request, f"¡Enviado con éxito a Minicore! (Status: {response.status_code})")
+                    return render(request, 'enviar_secreto.html', {'texto_encriptado': texto_encriptado})
+                else:
+                    messages.error(request, f"Error en Minicore: {response.status_code} - {response.text}")
+                    
+            except requests.exceptions.ConnectionError:
+                messages.error(request, "Error de conexión: No se pudo contactar con Minicore en localhost:8081.")
+            except Exception as e:
+                messages.error(request, f"Ocurrió un error inesperado: {str(e)}")
+                print(f"ERROR vista_enviar_secreto: {e}")
+                
+    return render(request, 'enviar_secreto.html')
