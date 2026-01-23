@@ -60,6 +60,7 @@ OIDC_RP_SIGN_ALGO = 'RS256'
 
 LOGIN_REDIRECT_URL = '/post_login_dispatch/'
 LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = 'oidc_authentication_init'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

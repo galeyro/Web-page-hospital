@@ -136,6 +136,9 @@ def create_user(request):
 
 # Login con usuario y contraseña
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('post_login_dispatch')
+
     if request.method == 'POST':
         # Obtener datos del forms
         email = request.POST.get('email')

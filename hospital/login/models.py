@@ -15,6 +15,9 @@ def validar_cedula_ecuador(cedula):
     - Dígito 10: dígito verificador (calculado con algoritmo)
     """
     
+    if not cedula:
+        return
+    
     # Verificar que sea string de 10 dígitos
     if not isinstance(cedula, str) or not cedula.isdigit() or len(cedula) != 10:
         raise ValidationError('La cédula debe tener 10 dígitos')
@@ -51,6 +54,8 @@ def validar_telefono(telefono):
     """
     Valida que el teléfono tenga exactamente 10 dígitos
     """
+    if not telefono:
+        return
     if not telefono.isdigit() or len(telefono) != 10:
         raise ValidationError('Número de teléfono invalido')
 
@@ -59,6 +64,9 @@ def validar_edad(fecha_nacimiento):
     """
     Valida que el usuario sea mayor de 18 años
     """
+    if not fecha_nacimiento:
+        return
+    
     hoy = date.today()
     edad = relativedelta(hoy, fecha_nacimiento).years
     
@@ -77,21 +85,24 @@ class Usuario(models.Model):
     cedula = models.CharField(
         max_length=20, 
         unique=True,
-        validators=[validar_cedula_ecuador]
+        validators=[validar_cedula_ecuador],
+        null=True, blank=True
     )
     telefono = models.CharField(
         max_length=15,
-        validators=[validar_telefono]
+        validators=[validar_telefono],
+        null=True, blank=True
         )
     email = models.EmailField(unique=True)
     fecha_nacimiento = models.DateField(
-        validators=[validar_edad]
+        validators=[validar_edad],
+        null=True, blank=True
     )
     genero = models.CharField(max_length=1, choices=[
         ('M', 'Masculino'),
         ('F', 'Femenino'),
         ('O', 'Otro')
-    ])
+    ], null=True, blank=True)
     password = models.CharField(max_length=128)
     rol = models.CharField(
         max_length=10,

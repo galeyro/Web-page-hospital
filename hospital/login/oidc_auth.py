@@ -50,5 +50,25 @@ def sync_custom_session(sender, user, request, **kwargs):
         print(f"DEBUG: Session synced for Usuario ID {app_user.id} ({app_user.rol})")
         
     except Usuario.DoesNotExist:
-        print(f"DEBUG: New SSO user found {user.email} - pending profile completion")
-        # Do NOTHING. 'post_login_dispatch' will detect missing session logic.
+        print(f"DEBUG: New SSO user found {user.email} - Auto-creating local user...")
+        try:
+            # Auto-create the user with default role 'usuario'
+            # Note: cedula, telefono, etc. are now optional in models.py
+            new_user = Usuario.objects.create(
+                nombres=user.first_name or "Usuario",
+                apellidos=user.last_name or "Sin Apellido",
+                email=user.email,
+                rol='usuario',
+                password="sso_managed_password", # Not used for SSO
+                # Optional fields left empty: cedula, telefono, fecha_nacimiento, genero
+            )
+            
+            # Populate session for the new user
+            request.session['usuario_id'] = new_user.id
+            request.session['usuario_nombre'] = new_user.nombres
+            request.session['usuario_rol'] = new_user.rol
+            
+            print(f"DEBUG: Created and synced new user {new_user.email}")
+            
+        except Exception as e:
+            print(f"ERROR: Failed to auto-create user {user.email}: {e}")
