@@ -173,7 +173,29 @@ export default function SchedulerBoard() {
                 backgroundColor: 'transparent', position: 'relative', zIndex: 10
             }}>
                 <header style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <h1 style={{ color: '#0f172a', margin: 0, fontSize: '1.5rem', fontWeight: '900' }}>Hospital Scheduler</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <a
+                            href="/control_users/"
+                            style={{
+                                textDecoration: 'none',
+                                backgroundColor: '#3498db',
+                                color: 'white',
+                                padding: '8px 16px',
+                                borderRadius: '8px',
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2980b9'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3498db'}
+                        >
+                            <span>←</span> Regresar al Control
+                        </a>
+                        <h1 style={{ color: '#0f172a', margin: 0, fontSize: '1.5rem', fontWeight: '900' }}>Gestor de Agenda</h1>
+                    </div>
                     <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #e2e8f0', fontWeight: 'bold' }} />
                 </header>
 
