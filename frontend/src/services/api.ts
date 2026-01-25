@@ -1,5 +1,5 @@
 import axios from "axios";
-import {Cita, Consultorio, SchedulerResponse, ReprogramarDatos} from "../types/scheduler";
+import { Cita, Consultorio, SchedulerResponse, ReprogramarDatos } from "../types/scheduler";
 
 //1. configurar la instancia base
 const api = axios.create({
@@ -10,7 +10,8 @@ const api = axios.create({
 export const getSchedulerData = (fecha: string) => {
     return api.get<SchedulerResponse>('/scheduler/', {
         params: {
-            fecha
+            fecha,
+            _t: Date.now() // Cache busting automático
         }
     });
 };

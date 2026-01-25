@@ -141,65 +141,80 @@ class Cita(models.Model):
         ]
 
     def clean(self):
+        # 0) Normalización de precisión: SQLite a veces maneja microsegundos que causan 'fantasmas'
+        if self.hora_inicio:
+            self.hora_inicio = self.hora_inicio.replace(second=0, microsecond=0)
+        if self.hora_fin:
+            self.hora_fin = self.hora_fin.replace(second=0, microsecond=0)
+
         # 1) Validar que hora_fin > hora_inicio
         if self.hora_fin <= self.hora_inicio:
             raise ValidationError("La hora de fin debe ser posterior a la hora de inicio.")
 
-        # 2) Validar que la fecha sea hoy o futura
-        # today = timezone.localdate()
-        # if self.fecha < today:
-        #     raise ValidationError("La cita debe ser para hoy o una fecha futura.")
+        # 2) Validar que el consultorio no sea Nulo (Cita sin consultorio es invisible y bloquea)
+        if not self.consultorio:
+             raise ValidationError("No se puede agendar sin un consultorio asignado. Contacte a soporte.")
 
         # 3) Validar que la duración coincida con la especialidad
-        start = datetime.combine(self.fecha, self.hora_inicio)
-        end = datetime.combine(self.fecha, self.hora_fin)
-        duracion_actual = int((end - start).total_seconds() / 60)  # en minutos
-        
         especialidad = self.especialidad or self.medico.especialidad
-        if duracion_actual != especialidad.duracion_cita:
-            raise ValidationError(
-                f"La duración debe ser {especialidad.duracion_cita} minutos "
-                f"(especialidad: {especialidad.nombre})"
-            )
+        dur_min = (self.hora_fin.hour * 60 + self.hora_fin.minute) - (self.hora_inicio.hour * 60 + self.hora_inicio.minute)
+        
+        if dur_min != especialidad.duracion_cita:
+            raise ValidationError(f"Duración incorrecta: {dur_min} min. Debe ser {especialidad.duracion_cita} min.")
 
-        # 4) Validar que no haya solapamiento con otras citas del médico
-        solapadas = Cita.objects.filter(
-            medico=self.medico,
-            fecha=self.fecha
-        ).exclude(pk=self.pk).filter(
+        # 4) Validar solapamiento del Médico (Exclusión estricta por PK)
+        solapadas_medico = Cita.objects.filter(medico=self.medico, fecha=self.fecha)
+        if self.pk:
+            # Forzamos conversión para evitar fallos de tipo en SQLite
+            curr_pk = int(self.pk)
+            solapadas_medico = solapadas_medico.exclude(pk=curr_pk)
+            
+        solapadas_medico = solapadas_medico.filter(
             Q(hora_inicio__lt=self.hora_fin) & Q(hora_fin__gt=self.hora_inicio)
         )
         
-        if solapadas.exists():
-            raise ValidationError("El médico ya tiene una cita que se solapa en este horario.")
-
-        # 5) Validar que la cita esté dentro de los horarios del médico
-        dia_semana = self.fecha.weekday()  # 0=Lunes, 6=Domingo
-        horario = Horario.objects.filter(medico=self.medico, dia_semana=dia_semana).first()
-        
-        if not horario:
+        if solapadas_medico.exists():
+            conflicto = solapadas_medico.first()
+            # Log para consola runserver
+            print(f"DEBUG: Choque de Medico {self.medico.id} Cita {self.pk} vs {conflicto.pk}")
             raise ValidationError(
-                f"El médico {self.medico} no tiene horario registrado para "
-                f"{self.fecha.strftime('%A')}"
+                f"El médico ya tiene la cita #{conflicto.pk} en el horario "
+                f"{conflicto.hora_inicio.strftime('%H:%M')}-{conflicto.hora_fin.strftime('%H:%M')}."
             )
+
+        # 4.1) Validar solapamiento del Consultorio
+        solapadas_cons = Cita.objects.filter(consultorio=self.consultorio, fecha=self.fecha)
+        if self.pk:
+            solapadas_cons = solapadas_cons.exclude(pk=int(self.pk))
+            
+        solapadas_cons = solapadas_cons.filter(
+            Q(hora_inicio__lt=self.hora_fin) & Q(hora_fin__gt=self.hora_inicio)
+        )
+        
+        if solapadas_cons.exists():
+            conflicto = solapadas_cons.first()
+            raise ValidationError(
+                f"Consultorio {self.consultorio.numero} ocupado por {conflicto.medico.usuario.nombres} "
+                f"en el rango {conflicto.hora_inicio.strftime('%H:%M')}-{conflicto.hora_fin.strftime('%H:%M')}."
+            )
+
+        # 5) Horarios del médico
+        dia = self.fecha.weekday()
+        horario = Horario.objects.filter(medico=self.medico, dia_semana=dia).first()
+        if not horario:
+             raise ValidationError(f"El médico no atiende los {self.fecha.strftime('%A')}.")
         
         if not (horario.hora_inicio <= self.hora_inicio and self.hora_fin <= horario.hora_fin):
-            h_ini = horario.hora_inicio.strftime('%H:%M')
-            h_fin = horario.hora_fin.strftime('%H:%M')
-            raise ValidationError(
-                f"El horario no es válido. El médico atiende únicamente de {h_ini} a {h_fin} este día."
-            )
+            h1, h2 = horario.hora_inicio.strftime('%H:%M'), horario.hora_fin.strftime('%H:%M')
+            raise ValidationError(f"Fuera de rango laboral ({h1} a {h2}).")
 
-        # 6) Validar que el consultorio sea el correcto
+        # 6) Validación Interno/Externo
         if self.medico.tipo == 'interno':
-            if not self.consultorio or self.consultorio != self.medico.consultorio:
-                raise ValidationError(
-                    f"La cita debe ser en el consultorio asignado al médico: "
-                    f"{self.medico.consultorio}"
-                )
-        else:  # externo
-            if not self.consultorio or self.consultorio.tipo != 'externo':
-                raise ValidationError("Debe seleccionar un consultorio externo disponible.")
+            if self.consultorio != self.medico.consultorio:
+                raise ValidationError(f"Médico interno restringido a consultorio {self.medico.consultorio}.")
+        else:
+            if self.consultorio.tipo != 'externo':
+                raise ValidationError("Médico externo requiere consultorio tipo Externo.")
 
     def __str__(self):
-        return f"Cita {self.id} - {self.paciente.nombres} con {self.medico} ({self.fecha} {self.hora_inicio})"
+        return f"#{self.id} {self.paciente.nombres} ({self.fecha} {self.hora_inicio})"

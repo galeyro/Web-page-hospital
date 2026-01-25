@@ -88,7 +88,7 @@ export default function SchedulerBoard() {
 
         if (!targetConsultorio) return;
 
-        // Validaciones Médicas
+        // Validaciones Médicas Preliminares (Frontend)
         const isInterna = currentCita.tipo_medico?.toLowerCase().includes('interno') ||
             currentCita.tipo_medico?.toLowerCase().includes('general');
 
@@ -122,38 +122,52 @@ export default function SchedulerBoard() {
         let endTotalMin = newH * 60 + newM + durationMin;
         const newEndTime = `${String(Math.floor(endTotalMin / 60)).padStart(2, '0')}:${String(endTotalMin % 60).padStart(2, '0')}`;
 
-        if (checkOverlap(newStartTime, newEndTime, targetConsultorio.citas, currentCita.id)) {
-            alert(`❌ Horario ocupado (${newStartTime} - ${newEndTime}).`);
-            return;
-        }
-
         if (window.confirm(`¿Reprogramar cita a las ${newStartTime}?`)) {
             try {
+                setLoading(true);
                 await reprogramarCita(currentCita.id, {
                     consultorio_id: targetConsultorio.id,
                     fecha: fecha,
                     hora_inicio: newStartTime,
                     hora_fin: newEndTime
                 });
-                cargarDatos();
+
+                // RETRASO DE SEGURIDAD (Critical for Windows/SQLite)
+                await new Promise(resolve => setTimeout(resolve, 350));
             } catch (err: any) {
                 const msg = err.response?.data?.error || "Error al actualizar la cita.";
-                alert(`Error: ${msg}`);
+                alert(`⚠️ No se pudo mover la cita:\n\n${msg}`);
+            } finally {
+                // Siempre recargar para asegurar que el tablero sea igual a la DB
+                await cargarDatos();
             }
         }
     };
 
-    if (loading) return (
-        <div style={{
-            height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'linear-gradient(to bottom, #f8fafc, #f1f5f9)'
-        }}>
-            <div style={{ color: '#2563eb', fontWeight: 'bold' }}>🔄 Sincronizando Agenda...</div>
-        </div>
-    );
-
     return (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            {loading && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(255,255,255,0.7)',
+                    zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    backdropFilter: 'blur(2px)'
+                }}>
+                    <div style={{ backgroundColor: 'white', padding: '20px 40px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', fontWeight: 'bold', color: '#2563eb' }}>
+                        Actualizando Agenda...
+                    </div>
+                </div>
+            )}
+
+            {data?.huerfanos && data.huerfanos.length > 0 && (
+                <div style={{
+                    backgroundColor: '#fee2e2', color: '#991b1b', padding: '12px', textAlign: 'center',
+                    fontWeight: 'bold', borderBottom: '1px solid #f87171'
+                }}>
+                    ⚠️ ATENCIÓN: Se detectaron {data.huerfanos.length} citas invisibles (sin consultorio) que podrían bloquear el horario.
+                    Por favor, contacta al administrador para limpiarlas.
+                </div>
+            )}
             <div style={{
                 padding: '20px', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column',
                 backgroundColor: 'transparent', position: 'relative', zIndex: 10

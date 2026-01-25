@@ -2,6 +2,8 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.db.models import Q
 from datetime import datetime, date
 from citas.models import Cita, Consultorio, Horario
 from citas.services.serializers import *
@@ -14,76 +16,61 @@ class SchedulerDataView(APIView):
             fecha_obj = date.today()
             fecha_str = fecha_obj.strftime('%Y-%m-%d')
         else:
-            # Convertir string a objeto date para saber el día de la semana (0=Lunes, 6=Domingo)
+            fecha_str = fecha_str.split('?')[0].split('&')[0]
             fecha_obj = datetime.strptime(fecha_str,'%Y-%m-%d').date()
 
-        #1. Consultorios (con citas anidadas)
+        # 1. Consultorios (con citas anidadas)
         consultorios = Consultorio.objects.all().order_by('numero')
         consultorios_serializer = ConsultorioSchedulerSerializer(
-            consultorios,
-            many = True,
-            context = {'fecha': fecha_str}
+            consultorios, many=True, context={'fecha': fecha_str}
         )
 
-        #2. Horarios de Médicos para ese día de la semana
+        # 2. Horarios de Médicos
         dia_semana_num = fecha_obj.weekday()
         horarios = Horario.objects.filter(dia_semana=dia_semana_num)
-        horarios_serializer = HorarioMedicoSerializer(
-            horarios,
-            many = True
-        )
+        horarios_serializer = HorarioMedicoSerializer(horarios, many=True)
 
-        #3. Respuesta combinada
-        data = {
+        # 3. DETECCIÓN DE HUÉRFANOS (Citas invisibles)
+        huerfanos = Cita.objects.filter(fecha=fecha_str, consultorio__isnull=True)
+        huerfanos_data = CitaSchedulerSerializer(huerfanos, many=True).data
+
+        return Response({
             'consultorios': consultorios_serializer.data,
-            'horarios_disponibles': horarios_serializer.data
-        }
-        
-        return Response(data)
-        
+            'horarios_disponibles': horarios_serializer.data,
+            'huerfanos': huerfanos_data
+        })
+
 class ReprogramarCitaView(APIView):
     def put(self, request, pk):
-        #1. Buscar la cita
         try:
-            cita = Cita.objects.get(pk=pk)
-        except Cita.DoesNotExist:
-            return Response({'error': 'Cita no encontrada'}, status=404)
+            with transaction.atomic():
+                # Obtenemos la cita con bloqueo (si fuera Postgres, pero en SQLite ayuda a la atomicidad)
+                cita = Cita.objects.get(pk=pk)
+                
+                nuevo_consultorio_id = request.data.get('consultorio_id')
+                nueva_fecha = request.data.get('fecha')
+                nueva_hora_ini = request.data.get('hora_inicio')
+                nueva_hora_fin = request.data.get('hora_fin')
 
-        #2. Leer datos del JSON que envía React
-        nuevo_consultorio_id = request.data.get('consultorio_id')
-        nueva_fecha = request.data.get('fecha')
-        nueva_hora_inicio = request.data.get('hora_inicio')
-        nueva_hora_fin = request.data.get('hora_fin')
+                if nuevo_consultorio_id:
+                    cita.consultorio_id = nuevo_consultorio_id
+                if nueva_fecha:
+                    cita.fecha = nueva_fecha
+                if nueva_hora_ini:
+                    cita.hora_inicio = datetime.strptime(nueva_hora_ini[:5], "%H:%M").time()
+                if nueva_hora_fin:
+                    cita.hora_fin = datetime.strptime(nueva_hora_fin[:5], "%H:%M").time()
 
-        #3. Actualizar el objeto (en memoria, sin guardar todavía)
-        if nuevo_consultorio_id:
-            cita.consultorio_id = nuevo_consultorio_id
-        
-        if nueva_fecha:
-            cita.fecha = nueva_fecha
-            
-        if nueva_hora_inicio:
-            cita.hora_inicio = nueva_hora_inicio
-            
-        if nueva_hora_fin:
-            cita.hora_fin = nueva_hora_fin
+                # Ejecutar limpieza y validaciones
+                cita.full_clean()
+                cita.save()
 
-        #4. Validar y guardar
-        try:
-            #full_clean() ejecuta todos los validadores del modelo (def clean)
-            cita.full_clean()
-            cita.save()
-
-            #devolvemos la cita actualizada para que React refresque la tarjeta
-            return Response({
-                'status': 'ok',
-                'mensaje': 'Cita Reprogramada Exitosamente'
-            })
+            return Response({'status': 'ok', 'mensaje': 'Éxito'})
 
         except ValidationError as e:
-            # Si hay errores de validación, devolvemos el mensaje
-            error_msg = str(e.message_dict) if hasattr(e, 'message_dict') else str(e)
-            return Response({'error': error_msg}, status=400)
+            msg = ". ".join(sum(e.message_dict.values(), [])) if hasattr(e, 'message_dict') else str(e)
+            return Response({'error': msg}, status=400)
+        except Cita.DoesNotExist:
+            return Response({'error': 'La cita no existe en la DB.'}, status=404)
         except Exception as e:
-            # Si hay otro error, devolvemos el mensaje
-            return Response({'error': str(e)}, status=500)
+            return Response({'error': f"Error fatal: {str(e)}"}, status=500)

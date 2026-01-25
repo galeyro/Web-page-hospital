@@ -18,10 +18,21 @@ export interface Consultorio {
     citas: Cita[]; // ¡Importante! Un consultorio tiene una lista de citas
 }
 
+// Define la forma de un Horario de disponibilidad de un médico
+export interface HorarioMedico {
+    id: number;
+    id_medico: number;
+    nombre_medico: string;
+    dia_semana: number;
+    hora_inicio: string;
+    hora_fin: string;
+}
+
 // Define la respuesta completa del Scheduler (SchedulerDataView)
 export interface SchedulerResponse {
     consultorios: Consultorio[];
-    horarios_disponibles: any[]; // Por ahora ponle any o define la interfaz Horario si quieres
+    horarios_disponibles: HorarioMedico[]; // Por ahora ponle any o define la interfaz Horario si quieres
+    huerfanos?: Cita[]; // Citas sin consultorio asignado
 }
 
 export interface ReprogramarDatos {
