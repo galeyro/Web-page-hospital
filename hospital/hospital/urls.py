@@ -28,6 +28,7 @@ urlpatterns = [
     # ... admin y api ...
     path('admin/', admin.site.urls),
     path('api/scheduler/', SchedulerDataView.as_view(), name='scheduler_data'),
+    path('api/citas/<int:pk>/reprogramar/', ReprogramarCitaView.as_view(), name='reprogramar_cita'),
 
     # ... rutas django generales ...
     path('inicio/', views.index, name="inicio"),
