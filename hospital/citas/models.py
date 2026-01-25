@@ -146,9 +146,9 @@ class Cita(models.Model):
             raise ValidationError("La hora de fin debe ser posterior a la hora de inicio.")
 
         # 2) Validar que la fecha sea hoy o futura
-        today = timezone.localdate()
-        if self.fecha < today:
-            raise ValidationError("La cita debe ser para hoy o una fecha futura.")
+        # today = timezone.localdate()
+        # if self.fecha < today:
+        #     raise ValidationError("La cita debe ser para hoy o una fecha futura.")
 
         # 3) Validar que la duración coincida con la especialidad
         start = datetime.combine(self.fecha, self.hora_inicio)
@@ -184,8 +184,10 @@ class Cita(models.Model):
             )
         
         if not (horario.hora_inicio <= self.hora_inicio and self.hora_fin <= horario.hora_fin):
+            h_ini = horario.hora_inicio.strftime('%H:%M')
+            h_fin = horario.hora_fin.strftime('%H:%M')
             raise ValidationError(
-                f"La cita debe estar dentro del horario: {horario.hora_inicio}-{horario.hora_fin}"
+                f"El horario no es válido. El médico atiende únicamente de {h_ini} a {h_fin} este día."
             )
 
         # 6) Validar que el consultorio sea el correcto

@@ -82,7 +82,8 @@ class ReprogramarCitaView(APIView):
 
         except ValidationError as e:
             # Si hay errores de validación, devolvemos el mensaje
-            return Response({'error': e.message_dict}, status=400)
+            error_msg = str(e.message_dict) if hasattr(e, 'message_dict') else str(e)
+            return Response({'error': error_msg}, status=400)
         except Exception as e:
             # Si hay otro error, devolvemos el mensaje
             return Response({'error': str(e)}, status=500)

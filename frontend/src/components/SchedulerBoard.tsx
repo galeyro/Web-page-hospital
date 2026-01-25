@@ -1,90 +1,190 @@
 import { useState, useEffect } from "react";
-import { getSchedulerData } from "../services/api";
-import { SchedulerResponse } from "../types/scheduler";
-import { 
-    DndContext, 
-    DragEndEvent, 
-    PointerSensor, 
-    useSensor, 
-    useSensors 
+import { getSchedulerData, reprogramarCita } from "../services/api";
+import { SchedulerResponse, Cita } from "../types/scheduler";
+import {
+    DndContext,
+    DragEndEvent,
+    DragStartEvent,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragOverlay,
+    defaultDropAnimationSideEffects,
+    DropAnimation
 } from "@dnd-kit/core";
+import { createPortal } from "react-dom";
 
-export default function SchedulerBoard(){
+import TimeRuler from "./Scheduler/TimeRuler";
+import TimelineRow from "./Scheduler/TimelineRow";
+import CitaBlock from "./Scheduler/CitaBlock";
+import { percentToTime, checkOverlap } from "./Scheduler/utils/timeUtils";
+
+const dropAnimation: DropAnimation = {
+    sideEffects: defaultDropAnimationSideEffects({
+        styles: {
+            active: {
+                opacity: '0.4',
+            },
+        },
+    }),
+};
+
+export default function SchedulerBoard() {
     const [data, setData] = useState<SchedulerResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
+    const [activeCita, setActiveCita] = useState<Cita | null>(null);
+    const [totalCitas, setTotalCitas] = useState(0);
 
-    // CONFIGURACIÓN DE SENSORES
-    // Esto es crucial para evitar errores. Usamos PointerSensor para que funcione con mouse y touch.
+    // Sensor de puntero universal para máxima compatibilidad
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8, // Hay que mover el mouse 8px para empezar a arrastrar (evita clicks accidentales)
+                distance: 3, // Solo 3px de movimiento para arrancar
             },
         })
     );
 
-    useEffect(()=>{
-        const load = async() => {
-            try{
-                setLoading(true);
-                const response = await getSchedulerData(fecha);
-                setData(response.data);
-            }catch(error){
-                console.log("Error cargando datos: ", error);
-            }finally{
-                setLoading(false);
-            }
-        };
-
-        load();
+    useEffect(() => {
+        cargarDatos();
     }, [fecha]);
 
-    const handleDragEnd = (event: DragEndEvent) => {
-        console.log("Terminó drag: ", event);
+    useEffect(() => {
+        if (data) {
+            const total = data.consultorios.reduce((acc, c) => acc + c.citas.length, 0);
+            setTotalCitas(total);
+        }
+    }, [data]);
+
+    const cargarDatos = async () => {
+        try {
+            setLoading(true);
+            const response = await getSchedulerData(fecha);
+            setData(response.data);
+        } catch (error) {
+            console.error("Error cargando datos: ", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    if (loading) {
-        return <p style={{color:'black', padding: 20}}>Cargando...</p>;
+    const handleDragStart = (event: DragStartEvent) => {
+        const { active } = event;
+        if (active.data.current && active.data.current.type === 'CITA') {
+            setActiveCita(active.data.current.cita);
+        }
     };
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        setActiveCita(null);
+
+        if (!over || !active.data.current || !data) return;
+
+        const currentCita = active.data.current.cita as Cita;
+        const consultorioIdStr = String(over.id).replace('consultorio-', '');
+        const targetConsultorioId = parseInt(consultorioIdStr);
+        const targetConsultorio = data.consultorios.find(c => c.id === targetConsultorioId);
+
+        if (!targetConsultorio) return;
+
+        // Validaciones Médicas
+        const isInterna = currentCita.tipo_medico?.toLowerCase().includes('interno') ||
+            currentCita.tipo_medico?.toLowerCase().includes('general');
+
+        if (isInterna) {
+            const origin = data.consultorios.find(c => c.citas.some(cita => cita.id === currentCita.id));
+            if (origin && targetConsultorio.id !== origin.id) {
+                alert("⚠️ Las citas internas no pueden cambiar de consultorio.");
+                return;
+            }
+        } else {
+            if (targetConsultorio.tipo?.toLowerCase() !== 'externo') {
+                alert("⚠️ Las citas externas solo van a consultorios externos.");
+                return;
+            }
+        }
+
+        const dropRect = active.rect.current.translated;
+        const rect = over.rect;
+
+        if (!dropRect || !rect) return;
+
+        const relativeX = dropRect.left - rect.left;
+        let percent = (relativeX / rect.width) * 100;
+        const newStartTime = percentToTime(percent);
+
+        const [h1, m1] = currentCita.hora_inicio.split(':').map(Number);
+        const [h2, m2] = currentCita.hora_fin.split(':').map(Number);
+        const durationMin = (h2 * 60 + m2) - (h1 * 60 + m1);
+
+        const [newH, newM] = newStartTime.split(':').map(Number);
+        let endTotalMin = newH * 60 + newM + durationMin;
+        const newEndTime = `${String(Math.floor(endTotalMin / 60)).padStart(2, '0')}:${String(endTotalMin % 60).padStart(2, '0')}`;
+
+        if (checkOverlap(newStartTime, newEndTime, targetConsultorio.citas, currentCita.id)) {
+            alert(`❌ Horario ocupado (${newStartTime} - ${newEndTime}).`);
+            return;
+        }
+
+        if (window.confirm(`¿Reprogramar cita a las ${newStartTime}?`)) {
+            try {
+                await reprogramarCita(currentCita.id, {
+                    consultorio_id: targetConsultorio.id,
+                    fecha: fecha,
+                    hora_inicio: newStartTime,
+                    hora_fin: newEndTime
+                });
+                cargarDatos();
+            } catch (err: any) {
+                const msg = err.response?.data?.error || "Error al actualizar la cita.";
+                alert(`Error: ${msg}`);
+            }
+        }
+    };
+
+    if (loading) return (
+        <div style={{
+            height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'linear-gradient(to bottom, #f8fafc, #f1f5f9)'
+        }}>
+            <div style={{ color: '#2563eb', fontWeight: 'bold' }}>🔄 Sincronizando Agenda...</div>
+        </div>
+    );
 
     return (
-        <div className="p-4" style={{padding: 20}}> 
-            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <h2 style={{color: '#333', margin: 0}}>Agenda del día:</h2>
-                <input 
-                    type="date" 
-                    value={fecha} 
-                    onChange={(e) => setFecha(e.target.value)}
-                    style={{
-                        padding: '8px 12px',
-                        fontSize: '16px',
-                        borderRadius: '5px',
-                        border: '1px solid #ccc',
-                        cursor: 'pointer'
-                    }}
-                />
-            </div>
-            
-            {/* Pasa los sensores al contexto */}
-            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-                <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', padding: '20px 0' }}>
-                    {data?.consultorios.map(c => (
-                        <div key={c.id} style={{ minWidth: 250, background:'white', border: '1px solid #ccc', borderRadius: 8, padding: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                            <h3 style={{color: '#444', borderBottom: '1px solid #eee'}}>{c.numero}</h3>
-                            {/* Mostramos las citas bonito en lugar de JSON crudo */}
-                            <div style={{marginTop: 10}}>
-                                {c.citas.length > 0 ? c.citas.map(cita => (
-                                    <div key={cita.id} style={{background: '#f0f9ff', padding: 8, marginBottom: 5, borderRadius: 4, borderLeft: '3px solid #007bff'}}>
-                                        <div style={{fontWeight: 'bold', fontSize: 12}}>{cita.hora_inicio}</div>
-                                        <div style={{color: '#555'}}>{cita.nombre_paciente}</div>
-                                    </div>
-                                )) : <div style={{color: '#999', fontStyle: 'italic'}}>Sin citas</div>}
-                            </div>
+        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            <div style={{
+                padding: '20px', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column',
+                backgroundColor: 'transparent', position: 'relative', zIndex: 10
+            }}>
+                <header style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <h1 style={{ color: '#0f172a', margin: 0, fontSize: '1.5rem', fontWeight: '900' }}>Hospital Scheduler</h1>
+                    <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #e2e8f0', fontWeight: 'bold' }} />
+                </header>
+
+                <div style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: '20px', backgroundColor: 'white', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <TimeRuler />
+                        <div style={{ overflowY: 'auto', flex: 1 }}>
+                            {data?.consultorios.map(c => {
+                                const horariosActivos = activeCita ?
+                                    data.horarios_disponibles.filter(h =>
+                                        h.nombre_medico?.toLowerCase().trim() === activeCita.nombre_medico?.toLowerCase().trim()
+                                    ) : [];
+                                return <TimelineRow key={c.id} consultorio={c} activeCita={activeCita} horariosMedico={horariosActivos} />;
+                            })}
                         </div>
-                    ))}
+                    </div>
                 </div>
-            </DndContext>
-        </div>
+            </div>
+
+            {createPortal(
+                <DragOverlay dropAnimation={dropAnimation} style={{ zIndex: 99999 }}>
+                    {activeCita ? <CitaBlock cita={activeCita} isOverlay /> : null}
+                </DragOverlay>,
+                document.body
+            )}
+        </DndContext>
     );
 }
