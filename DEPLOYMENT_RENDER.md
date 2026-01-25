@@ -26,10 +26,12 @@ En la pantalla de creación del Web Service, asegúrate de:
 - **Name**: `web-page-hospital` (o el que prefieras)
 - **Source**: `galeyro/Web-page-hospital`
 - **Branch**: `main` (o la rama que uses)
-- **Language**: Python 3
-- **Build Command**: `pip install -r requirements.txt && cd hospital && python manage.py collectstatic --no-input`
-- **Start Command**: `gunicorn hospital.wsgi:application`
-- **Root Directory**: `hospital` (importante!)
+- **Language**: Python 3 (Render intentará detectar tb Node para el frontend)
+- **Build Command**: `./build.sh`
+- **Start Command**: `cd hospital && gunicorn hospital.wsgi:application`
+- **Root Directory**: `.` (Déjalo vacío o pon . para usar la raíz del repo)
+
+> **Nota**: Al usar `./build.sh`, Render instalará las dependencias de Node.js y compilará el frontend automáticamente antes de preparar el backend.
 
 ### 3. **Configurar Variables de Entorno**
 

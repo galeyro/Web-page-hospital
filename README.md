@@ -4,6 +4,8 @@
   <img src="hospital/login/static/images/LOGO-COLOR.svg" alt="Alfa Hospital Logo" width="200"/>
   
   [![Django](https://img.shields.io/badge/Django-5.2.7-green.svg)](https://djangoproject.com/)
+  [![React](https://img.shields.io/badge/React-18.x-61DAFB.svg)](https://reactjs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6.svg)](https://www.typescriptlang.org/)
   [![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://python.org/)
   [![Render](https://img.shields.io/badge/Deployed-Render-46E3B7.svg)](https://render.com/)
   [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -25,9 +27,10 @@
 
 - 🔐 **Sistema de autenticación seguro** con sesiones
 - 👥 **Gestión completa de usuarios** (CRUD)
-- 🛡️ **URLs protegidas** con decoradores personalizados
-- 🎨 **Interfaz responsive** con HTML semántico
-- 🔒 **Protección CSRF** en todos los formularios
+- 📅 **Scheduler Interactivo** con Drag & Drop para citas
+- 🏢 **Control de Consultorios** (Internos y Externos)
+- 🎨 **Interfaz Moderna** con React y animaciones premium
+- 🔒 **Protección CSRF** y validación atómica en backend
 
 ## 🚀 Características Técnicas
 
@@ -42,8 +45,11 @@
 - ✅ **Protección de rutas** mediante decoradores
 - ✅ **Cierre de sesión** con limpieza completa
 - ✅ **Validación de cédula ecuatoriana**
-- ✅ **Sistema de roles** (Admin, Médico, Usuario)
+- ✅ **Gestión de roles** (Admin, Médico, Usuario)
 - ✅ **Dashboard personalizado** por rol
+- ✅ **Scheduler Drag & Drop** para reprogramar citas
+- ✅ **Validación de conflictos** de horario y consultorio
+- ✅ **Detección de "Citas Huérfanas"** e invisibles
 
 ### Por implementar
 
@@ -65,51 +71,27 @@
 | -------------- | ------- | ---------------------------------- |
 | **Python**     | 3.13    | Lenguaje de programación principal |
 | **Django**     | 5.2.7   | Framework web backend              |
-| **SQLite**     | 3       | Base de datos                      |
-| **Gunicorn**   | 23.0.0  | Servidor WSGI                      |
-| **WhiteNoise** | 6.6.0   | Servir archivos estáticos          |
-| **Render**     | -       | Plataforma de hosting              |
-| **HTML5**      | -       | Estructura semántica               |
-| **CSS3**       | -       | Estilos y diseño responsive        |
+| **React**      | 18.x    | Interfaz de usuario interactiva    |
+| **TypeScript** | 5.x     | Tipado estático y robustez         |
+| **Vite**       | 6.x     | Herramienta de build ultra rápida  |
+| **SQLite**     | 3       | Base de datos (Desarrollo)         |
+| **Dnd-Kit**    | 6.x     | Motor de Drag & Drop               |
 
 
 ## 📁 Estructura del Proyecto
 
 ```
 Web-page-hospital/
-├── hospital/                   # Proyecto Django principal
+├── frontend/                   # Frontend en React + Vite
+│   ├── src/                    # Código fuente TSX/TS
+│   │   ├── components/         # Scheduler, Animations, etc.
+│   │   └── types/              # Definiciones TypeScript
+│   └── package.json            # Dependencias React
+├── hospital/                   # Proyecto Django Backend
 │   ├── manage.py               # Comando de gestión Django
-│   ├── requirements.txt        # Dependencias Python
-│   ├── Procfile                # Configuración para Render
-│   ├── runtime.txt             # Versión de Python
-│   ├── startup.sh              # Script de inicialización
-│   ├── create_admin.py         # Script para crear admin
-│   ├── hospital/               # Configuración del proyecto
-│   │   ├── settings.py         # Configuraciones
-│   │   ├── urls.py             # URLs principales
-│   │   └── wsgi.py             # WSGI app
-│   ├── login/                  # Aplicación principal
-│   │   ├── models.py           # Modelos de datos
-│   │   ├── views.py            # Lógica de las vistas
-│   │   ├── forms.py            # Formularios
-│   │   ├── validators.py       # Validadores personalizados
-│   │   ├── admin.py            # Panel administrativo
-│   │   ├── static/             # Archivos estáticos
-│   │   │   ├── css/
-│   │   │   └── images/
-│   │   ├── templates/          # Plantillas HTML
-│   │   │   ├── index.html
-│   │   │   ├── login.html
-│   │   │   ├── home.html
-│   │   │   ├── control_users.html
-│   │   │   ├── create_user.html
-│   │   │   └── update_user.html
-│   │   └── migrations/         # Migraciones de BD
-│   └── citas/                  # Aplicación de citas
-│       ├── models.py           # Modelos de citas
-│       ├── views.py            # Vistas de citas
-│       └── migrations/         # Migraciones
-└── README.md                   # Este archivo
+│   ├── login/                  # App de Usuarios y Auth
+│   └── citas/                  # App de Citas (API & Models)
+└── README.md
 ```
 
 ## ⚙️ Instalación y Configuración Local
@@ -161,6 +143,21 @@ python manage.py runserver
 ```
 
 La aplicación estará disponible en: `http://127.0.0.1:8000/`
+
+### 7. Configurar Frontend (React)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+El Scheduler estará disponible en modo desarrollo. Para producción, usa `npm run build` y Django servirá los archivos desde `frontend/dist`.
+
+## 🛠️ Comandos de Mantenimiento (Backend)
+
+*   **Poblar datos de prueba**: `python manage.py seed_citas` (Genera citas para el 2026-02-01)
+*   **Limpiar citas huérfanas**: `python manage.py purge_citas`
 
 ## 🖥️ Uso del Sistema
 
@@ -250,6 +247,14 @@ ALLOWED_HOSTS=web-page-hospital.onrender.com
 ```
 
 ## 📋 Changelog
+
+### [3.0.0] - 2026-01-25
+
+**Nuevo:**
+- 🚀 **Integración de React + Vite**: Frontend interactivo totalmente renovado.
+- 📅 **Scheduler con Drag & Drop**: Nueva vista para gestión visual de citas.
+- 🔒 **Validación Atómica**: Protección contra colisiones y "citas fantasma" en SQLite.
+- 🛠️ **Comandos CLI**: `seed_citas` y `purge_citas` para gestión de datos.
 
 ### [2.0.0] - 2025-11-16
 
