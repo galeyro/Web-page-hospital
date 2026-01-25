@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -61,7 +62,9 @@ ROOT_URLCONF = 'hospital.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR.parent / 'frontend' / 'dist',  # <--- USAR ESTA SINTAXIS
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -123,6 +126,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    BASE_DIR.parent / 'frontend' / 'dist',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -139,3 +145,12 @@ if not DEBUG:
         "default-src": ("'self'",),
     }
 
+# Configuracion de CORS
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Configuración de REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+}
