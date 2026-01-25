@@ -114,7 +114,8 @@ def run_seed():
         med_hotel = Usuario.objects.get(email=email_hotel).medico
         print("ℹ️ Dr. Hotel ya existe")
 
-    # 5. Crear Paciente Galo
+    # 5. Crear Pacientes
+    # Galo
     email_galo = 'galo@email.com'
     if not Usuario.objects.filter(email=email_galo).exists():
         user_galo = Usuario.objects.create(
@@ -133,49 +134,100 @@ def run_seed():
         user_galo = Usuario.objects.get(email=email_galo)
         print("ℹ️ Usuario Galo ya existe")
 
-    # 6. Crear Citas (Feb 1 y 2 de 2026)
-    # Fechas especificas
-    fechas_citas = [date(2026, 2, 1), date(2026, 2, 2)]
-    
-    for fecha in fechas_citas:
-        dia_semana = fecha.weekday() # 0=Mon, 6=Sun
-        
-        # Intentar agendar con House (Solo L-V)
-        if dia_semana < 5: 
-            if not Cita.objects.filter(medico=med_house, fecha=fecha).exists():
-                try:
-                    Cita.objects.create(
-                        paciente=user_galo,
-                        medico=med_house,
-                        consultorio=med_house.consultorio,
-                        especialidad=med_house.especialidad,
-                        fecha=fecha,
-                        hora_inicio=time(8, 0), # 8:00 AM
-                        hora_fin=time(8, 30)
-                    )
-                    print(f"✅ Cita creada con House para {fecha}")
-                except Exception as e:
-                    print(f"⚠️ No se pudo crear cita House {fecha}: {e}")
+    # Mathias
+    email_mathias = 'mathias@email.com'
+    if not Usuario.objects.filter(email=email_mathias).exists():
+        user_mathias = Usuario.objects.create(
+            nombres='Mathias',
+            apellidos='Paciente',
+            cedula='0950000042',
+            telefono='0944444444',
+            email=email_mathias,
+            fecha_nacimiento='1995-05-05',
+            genero='M',
+            password=make_password('test'),
+            rol='usuario'
+        )
+        print("✅ Usuario Mathias creado")
+    else:
+        user_mathias = Usuario.objects.get(email=email_mathias)
+        print("ℹ️ Usuario Mathias ya existe")
 
-        # Intentar agendar con Hotel (L-D segun nuestro seed)
-        if not Cita.objects.filter(medico=med_hotel, fecha=fecha).exists():
-            try:
-                # Para externo, asignamos un consultorio externo libre
-                # En un caso real, esto se elige en el momento. Aqui hardcodeamos.
-                consultorio_cita = cons_ext_1  
-                
-                Cita.objects.create(
-                    paciente=user_galo,
-                    medico=med_hotel,
-                    consultorio=consultorio_cita,
-                    especialidad=med_hotel.especialidad,
-                    fecha=fecha,
-                    hora_inicio=time(10, 0), # 10:00 AM
-                    hora_fin=time(10, 30)
-                )
-                print(f"✅ Cita creada con Hotel para {fecha}")
-            except Exception as e:
-                print(f"⚠️ No se pudo crear cita Hotel {fecha}: {e}")
+    # 6. Crear Citas (Feb 1 y 2 de 2026)
+    pacientes = [user_galo, user_mathias]
+    fechas = [date(2026, 2, 1), date(2026, 2, 2)]
+    
+    # Horas base para generar citas escalonadas
+    horas_house = [8, 9, 10, 11] # AM
+    horas_hotel = [10, 11, 12, 13] # AM - PM
+
+    for fecha in fechas:
+        dia_semana = fecha.weekday()
+        
+        # Iteramos pacientes para darles citas a ambos
+        for i, paciente in enumerate(pacientes):
+            # Offset para que no choquen los pacientes (uno a las 8:00, otro a las 8:30 etc)
+            offset_minutos = 30 * i 
+
+            # --- Citas con House (Solo Lunes-Viernes) ---
+            if dia_semana < 5: 
+                # Creamos 2 citas por paciente con House si es posible
+                for h in [8, 14]: # Una en la mañana (8am+), una en la tarde (2pm+)
+                    try:
+                        hora_ini = time(h, offset_minutos) # EJ: Galo 8:00, Mathias 8:30
+                        # Calculamos fin (30 min duracion)
+                        # Nota simple: esto asume que minuto+30 no pasa de 60, 
+                        # pero con 0 y 30 estamos seguros.
+                        min_fin = offset_minutos + 30
+                        h_fin = h
+                        if min_fin >= 60:
+                            min_fin -= 60
+                            h_fin += 1
+                        
+                        hora_fin = time(h_fin, min_fin)
+
+                        if not Cita.objects.filter(medico=med_house, fecha=fecha, hora_inicio=hora_ini).exists():
+                            Cita.objects.create(
+                                paciente=paciente,
+                                medico=med_house,
+                                consultorio=med_house.consultorio,
+                                especialidad=med_house.especialidad,
+                                fecha=fecha,
+                                hora_inicio=hora_ini,
+                                hora_fin=hora_fin
+                            )
+                            print(f"✅ Cita House: {paciente.nombres} el {fecha} a las {hora_ini}")
+                    except Exception as e:
+                        print(f"⚠️ Skip Cita House {fecha} {hora_ini}: {e}")
+
+            # --- Citas con Hotel (Lunes-Domingo) ---
+            # Creamos 2 citas por paciente con Hotel
+            for h in [10, 12]: # 10am+ y 12pm+
+                try:
+                    hora_ini = time(h, offset_minutos)
+                    min_fin = offset_minutos + 30
+                    h_fin = h
+                    if min_fin >= 60:
+                        min_fin -= 60
+                        h_fin += 1
+                    hora_fin = time(h_fin, min_fin)
+
+                    if not Cita.objects.filter(medico=med_hotel, fecha=fecha, hora_inicio=hora_ini).exists():
+                        # Asignar un consultorio externo (rotativo para variar)
+                        consultorio = cons_ext_1 if i == 0 else cons_ext_2
+                        
+                        Cita.objects.create(
+                            paciente=paciente,
+                            medico=med_hotel,
+                            consultorio=consultorio,
+                            especialidad=med_hotel.especialidad,
+                            fecha=fecha,
+                            hora_inicio=hora_ini,
+                            hora_fin=hora_fin
+                        )
+                        print(f"✅ Cita Hotel: {paciente.nombres} el {fecha} a las {hora_ini}")
+                except Exception as e:
+                     print(f"⚠️ Skip Cita Hotel {fecha} {hora_ini}: {e}")
 
     print("🏁 Seed completado exitosamente.")
 
