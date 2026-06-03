@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hospital-deployment
+  namespace: hospital
+  labels:
+    app: hospital
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hospital
+  template:
+    metadata:
+      labels:
+        app: hospital
+    spec:
+      containers:
+        - name: hospital
+          image: web-page-hospital:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: hospital-config
+          volumeMounts:
+            - name: db-volume
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /login/
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /login/
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+      volumes:
+        - name: db-volume
+          persistentVolumeClaim:
+            claimName: hospital-db-pvc

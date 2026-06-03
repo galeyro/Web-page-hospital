@@ -1,0 +1,14 @@
+.git
+.github
+__pycache__
+*.pyc
+*.pyo
+venv/
+.venv/
+node_modules/
+frontend/dist/
+hospital/staticfiles/
+hospital/db.sqlite3
+*.log
+.env
+.env.local
