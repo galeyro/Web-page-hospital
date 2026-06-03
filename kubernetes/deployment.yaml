@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: hospital
-          image: web-page-hospital:latest
+          image: web-page-hospital:v1
           imagePullPolicy: Never
           ports:
             - containerPort: 8000
