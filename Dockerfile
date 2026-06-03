@@ -25,6 +25,9 @@ COPY hospital/ ./
 # Copy built frontend dist from Stage 1 into the location expected by Django
 COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
+# Collect static files for production
+RUN python manage.py collectstatic --no-input
+
 # Expose Django port
 EXPOSE 8000
 
