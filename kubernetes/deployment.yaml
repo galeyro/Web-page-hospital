@@ -5,6 +5,7 @@ metadata:
   namespace: hospital
   labels:
     app: hospital
+    version: "v2"
 spec:
   replicas: 2
   selector:
