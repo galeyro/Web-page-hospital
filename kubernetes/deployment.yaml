@@ -5,8 +5,9 @@ metadata:
   namespace: hospital
   labels:
     app: hospital
+    version: "v2"
 spec:
-  replicas: 3
+  replicas: 4
   selector:
     matchLabels:
       app: hospital
